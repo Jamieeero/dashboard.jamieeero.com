@@ -1,0 +1,304 @@
+/* ---------------------------------------------------------------
+   Design tokens
+   Palette: dark instrument-panel background, one signal accent.
+   Type: Inter for body/UI copy, IBM Plex Mono for labels, data,
+   and anything that reads as a readout (timestamps, counts, paths).
+----------------------------------------------------------------*/
+:root {
+  --bg: #14171a;
+  --panel: #1b1f24;
+  --panel-raised: #21262d;
+  --border: #2a2f36;
+  --text: #e8eaed;
+  --text-muted: #8b939d;
+  --accent: #4fd1c5;
+  --accent-dim: #2f5c58;
+  --danger: #d97757;
+
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --radius: 6px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+a {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------
+   Shell
+----------------------------------------------------------------*/
+.shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+}
+
+.shell__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.shell__title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.shell__title span {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.shell__clock {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------
+   Grid — asymmetric instrument-cluster layout.
+   Desktop: calendar wide top-left, notion tall right column,
+   desmos below calendar, file browser spans the full width.
+----------------------------------------------------------------*/
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas:
+    'calendar notion'
+    'desmos   notion'
+    'files    files';
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'calendar'
+      'notion'
+      'desmos'
+      'files';
+  }
+}
+
+.panel--calendar {
+  grid-area: calendar;
+}
+.panel--notion {
+  grid-area: notion;
+}
+.panel--desmos {
+  grid-area: desmos;
+}
+.panel--files {
+  grid-area: files;
+}
+
+/* ---------------------------------------------------------------
+   Panel chrome
+----------------------------------------------------------------*/
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel__header h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.panel__header .meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.panel__body {
+  flex: 1;
+  min-height: 0;
+}
+
+.panel__body--padded {
+  padding: 16px;
+}
+
+.panel--calendar .panel__body,
+.panel--desmos .panel__body {
+  min-height: 320px;
+}
+
+.panel--notion .panel__body {
+  min-height: 460px;
+}
+
+.panel iframe {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border: 0;
+  display: block;
+}
+
+/* ---------------------------------------------------------------
+   File browser
+----------------------------------------------------------------*/
+.file-browser {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .file-browser {
+    grid-template-columns: 1fr;
+  }
+}
+
+.folder-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.folder-tree__item {
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.folder-tree__item:hover {
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.folder-tree__item--active {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.file-browser__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.file-browser__toolbar select {
+  background: var(--panel-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.dropzone {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.dropzone--active {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.dropzone__folder {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.file-browser__empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.file-browser__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file-browser__row {
+  display: grid;
+  grid-template-columns: 1fr 80px 100px 70px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.file-browser__size,
+.file-browser__date {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.file-browser__row button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.file-browser__row button:hover {
+  border-color: var(--danger);
+}

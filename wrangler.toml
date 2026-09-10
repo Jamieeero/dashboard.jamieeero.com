@@ -1,0 +1,12 @@
+name = "dashboard-jamieeero-com"
+compatibility_date = "2026-09-01"
+pages_build_output_dir = "dist"
+
+[[r2_buckets]]
+binding = "DASHBOARD_BUCKET"
+bucket_name = "jamieeero-dashboard-files"
+
+[[d1_databases]]
+binding = "DASHBOARD_DB"
+database_name = "jamieeero-dashboard"
+database_id = "e18b46a4-6498-48cb-ad6b-2cc8c61e5a8c"
