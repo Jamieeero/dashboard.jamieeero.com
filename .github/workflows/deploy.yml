@@ -28,5 +28,7 @@ jobs:
           command: deploy
           secrets: |
             NOTION_TOKEN
+            CALENDAR_ICS_URL
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          CALENDAR_ICS_URL: ${{ secrets.CALENDAR_ICS_URL }}

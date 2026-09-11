@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import FullscreenButton from './FullscreenButton'
 
 // Get a free API key at https://www.desmos.com/api (dev keys work fine
 // for a personal, non-commercial dashboard).
@@ -11,7 +12,7 @@ declare global {
       GraphingCalculator: (
         el: HTMLElement,
         options?: Record<string, unknown>
-      ) => { setExpression: (expr: { latex: string }) => void; destroy: () => void }
+      ) => { setExpression: (expr: { latex: string }) => void; destroy: () => void; resize: () => void }
     }
   }
 }
@@ -36,6 +37,7 @@ function loadDesmosScript(): Promise<void> {
 
 export default function DesmosPanel() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     let calculator: ReturnType<NonNullable<Window['Desmos']>['GraphingCalculator']> | null =
@@ -49,8 +51,6 @@ export default function DesmosPanel() {
         settingsMenu: false,
         expressionsCollapsed: true,
       })
-      // Optionally seed a starting expression or load a saved graph state here:
-      // calculator.setExpression({ latex: 'y=x^2' })
     })
 
     return () => {
@@ -59,11 +59,24 @@ export default function DesmosPanel() {
     }
   }, [])
 
+  useEffect(() => {
+    // Desmos needs an explicit resize when its container's size changes
+    // outside of a window resize event — e.g. entering/exiting fullscreen.
+    const onFullscreenChange = () => {
+      requestAnimationFrame(() => window.dispatchEvent(new Event('resize')))
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
+  }, [])
+
   return (
-    <section className="panel panel--desmos">
+    <section className="panel panel--desmos" ref={panelRef}>
       <header className="panel__header">
         <h2>Desmos</h2>
-        <span className="meta">graphing</span>
+        <div className="panel__header-actions">
+          <span className="meta">graphing</span>
+          <FullscreenButton targetRef={panelRef} />
+        </div>
       </header>
       <div className="panel__body" ref={containerRef} />
     </section>

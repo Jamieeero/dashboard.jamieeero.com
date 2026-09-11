@@ -68,3 +68,48 @@ export async function deleteFile(id: string, env: Env): Promise<Response> {
 
   return new Response(null, { status: 204 })
 }
+
+export async function updateFile(id: string, request: Request, env: Env): Promise<Response> {
+  const body = await request.json<{ name?: string; folder?: string }>()
+
+  const row = await env.DASHBOARD_DB.prepare('SELECT r2_key, name, folder FROM files WHERE id = ?')
+    .bind(id)
+    .first<{ r2_key: string; name: string; folder: string }>()
+  if (!row) return new Response('Not found', { status: 404 })
+
+  const newName = body.name ?? row.name
+  const newFolder = body.folder ?? row.folder
+
+  await env.DASHBOARD_DB.prepare('UPDATE files SET name = ?, folder = ? WHERE id = ?')
+    .bind(newName, newFolder, id)
+    .run()
+
+  return Response.json({ id, name: newName, folder: newFolder })
+}
+
+export async function listFolders(env: Env): Promise<Response> {
+  const { results } = await env.DASHBOARD_DB.prepare(
+    `SELECT path FROM folders
+     UNION SELECT DISTINCT folder AS path FROM files
+     ORDER BY path`
+  ).all<{ path: string }>()
+
+  const folders = results.map((r) => r.path)
+  if (!folders.includes('/')) folders.unshift('/')
+  return Response.json(folders)
+}
+
+export async function createFolder(request: Request, env: Env): Promise<Response> {
+  const body = await request.json<{ path?: string }>()
+  const path = (body.path ?? '').trim()
+  if (!path || path === '/') return new Response('Invalid folder path', { status: 400 })
+
+  const normalized = path.startsWith('/') ? path : `/${path}`
+  await env.DASHBOARD_DB.prepare(
+    'INSERT OR IGNORE INTO folders (path, created_at) VALUES (?, ?)'
+  )
+    .bind(normalized, new Date().toISOString())
+    .run()
+
+  return Response.json({ path: normalized })
+}

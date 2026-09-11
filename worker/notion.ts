@@ -3,7 +3,7 @@ export interface NotionEnv {
 }
 
 // The page to display — not secret, safe to hardcode.
-export const NOTION_PAGE_ID = 'ebd3d648c06153680d5ae02d809dd4cd9a8' // no dashes
+export const NOTION_PAGE_ID = '3d648c06-1536-80d5-ae02-d809dd4cd9a8'
 
 interface NotionBlock {
   id: string

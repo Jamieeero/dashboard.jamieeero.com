@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import FullscreenButton from './FullscreenButton'
 
 // Public share link, used only for the "Open in Notion" button.
 const NOTION_PAGE_URL = 'https://lean-twister-9bd.notion.site/ebd/3d648c06153680d5ae02d809dd4cd9a8'
@@ -69,6 +70,7 @@ export default function NotionPanel() {
   const [blocks, setBlocks] = useState<NotionBlock[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const panelRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     fetch('/api/notion')
@@ -82,12 +84,15 @@ export default function NotionPanel() {
   }, [])
 
   return (
-    <section className="panel panel--notion">
+    <section className="panel panel--notion" ref={panelRef}>
       <header className="panel__header">
         <h2>Notes</h2>
-        <a className="meta" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
-          open in notion →
-        </a>
+        <div className="panel__header-actions">
+          <a className="meta" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
+            open in notion →
+          </a>
+          <FullscreenButton targetRef={panelRef} />
+        </div>
       </header>
       <div className="panel__body panel__body--padded notion-content">
         {loading && <p className="notion-empty">Loading…</p>}

@@ -156,6 +156,41 @@ a {
   color: var(--text-muted);
 }
 
+.panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fullscreen-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.fullscreen-btn:hover {
+  color: var(--text);
+  border-color: var(--accent-dim);
+}
+
+.panel:fullscreen {
+  border-radius: 0;
+  padding: 12px;
+}
+
+.panel:fullscreen .panel__body,
+.panel:fullscreen .panel__body--padded {
+  min-height: 0;
+  flex: 1;
+}
+
 .panel__body {
   flex: 1;
   min-height: 0;
@@ -224,6 +259,21 @@ a {
   color: var(--text);
 }
 
+.folder-tree__new {
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.folder-tree__input {
+  background: var(--panel-raised);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 8px;
+  margin-top: 4px;
+}
+
 .file-browser__toolbar {
   display: flex;
   justify-content: flex-end;
@@ -274,9 +324,9 @@ a {
 
 .file-browser__row {
   display: grid;
-  grid-template-columns: 1fr 80px 100px 70px;
+  grid-template-columns: 1fr 70px 90px 120px 28px 60px;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   padding: 8px 0;
   border-bottom: 1px solid var(--border);
   font-size: 13px;
@@ -287,6 +337,30 @@ a {
   font-family: var(--font-mono);
   color: var(--text-muted);
   font-size: 12px;
+}
+
+.file-browser__move {
+  background: var(--panel-raised);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 6px;
+  font-size: 11px;
+  max-width: 120px;
+}
+
+.file-browser__download {
+  color: var(--text-muted);
+  text-decoration: none;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 0;
+}
+
+.file-browser__download:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
 }
 
 .file-browser__row button {
@@ -361,4 +435,36 @@ blockquote.notion-block {
 .notion-empty {
   color: var(--text-muted);
   font-size: 13px;
+}
+
+/* ---------------------------------------------------------------
+   Calendar agenda list
+----------------------------------------------------------------*/
+.agenda {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agenda__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.agenda__when {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agenda__title {
+  font-size: 13px;
+  text-align: right;
 }

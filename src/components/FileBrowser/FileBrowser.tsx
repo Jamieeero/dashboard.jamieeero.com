@@ -11,11 +11,12 @@ function formatSize(bytes: number): string {
 
 export default function FileBrowser() {
   const [files, setFiles] = useState<FileEntry[]>([])
+  const [folders, setFolders] = useState<string[]>(['/'])
   const [activeFolder, setActiveFolder] = useState('/')
   const [sortKey, setSortKey] = useState<SortKey>('date')
   const [loading, setLoading] = useState(true)
 
-  async function refresh() {
+  async function refreshFiles() {
     setLoading(true)
     try {
       const res = await fetch('/api/files')
@@ -26,15 +27,16 @@ export default function FileBrowser() {
     }
   }
 
-  useEffect(() => {
-    refresh()
-  }, [])
+  async function refreshFolders() {
+    const res = await fetch('/api/folders')
+    const data: string[] = await res.json()
+    setFolders(data)
+  }
 
-  const folders = useMemo(() => {
-    const set = new Set<string>(['/'])
-    files.forEach((f) => set.add(f.folder))
-    return Array.from(set).sort()
-  }, [files])
+  useEffect(() => {
+    refreshFiles()
+    refreshFolders()
+  }, [])
 
   const visible = useMemo(() => {
     const inFolder =
@@ -59,7 +61,25 @@ export default function FileBrowser() {
 
   async function handleDelete(id: string) {
     await fetch(`/api/files/${id}`, { method: 'DELETE' })
-    refresh()
+    refreshFiles()
+  }
+
+  async function handleMove(id: string, folder: string) {
+    await fetch(`/api/files/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder }),
+    })
+    refreshFiles()
+  }
+
+  async function handleCreateFolder(path: string) {
+    await fetch('/api/folders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path }),
+    })
+    refreshFolders()
   }
 
   return (
@@ -70,7 +90,12 @@ export default function FileBrowser() {
       </header>
       <div className="panel__body panel__body--padded file-browser">
         <aside className="file-browser__sidebar">
-          <FolderTree folders={folders} activeFolder={activeFolder} onSelect={setActiveFolder} />
+          <FolderTree
+            folders={folders}
+            activeFolder={activeFolder}
+            onSelect={setActiveFolder}
+            onCreateFolder={handleCreateFolder}
+          />
         </aside>
         <div className="file-browser__main">
           <div className="file-browser__toolbar">
@@ -81,7 +106,13 @@ export default function FileBrowser() {
               <option value="custom">Sort: custom</option>
             </select>
           </div>
-          <UploadDropzone folder={activeFolder} onUploaded={refresh} />
+          <UploadDropzone
+            folder={activeFolder}
+            onUploaded={() => {
+              refreshFiles()
+              refreshFolders()
+            }}
+          />
           {loading ? (
             <p className="file-browser__empty">Loading…</p>
           ) : visible.length === 0 ? (
@@ -95,6 +126,26 @@ export default function FileBrowser() {
                   <span className="file-browser__date">
                     {new Date(file.uploadedAt).toLocaleDateString()}
                   </span>
+                  <select
+                    className="file-browser__move"
+                    value={file.folder}
+                    onChange={(e) => handleMove(file.id, e.target.value)}
+                    aria-label={`Move ${file.name}`}
+                  >
+                    {folders.map((f) => (
+                      <option key={f} value={f}>
+                        {f === '/' ? 'All files' : f}
+                      </option>
+                    ))}
+                  </select>
+                  <a
+                    className="file-browser__download"
+                    href={`/api/files/${file.id}`}
+                    aria-label={`Download ${file.name}`}
+                    title="Download"
+                  >
+                    ⬇
+                  </a>
                   <button onClick={() => handleDelete(file.id)} aria-label={`Delete ${file.name}`}>
                     Delete
                   </button>

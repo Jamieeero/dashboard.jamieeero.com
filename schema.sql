@@ -9,3 +9,8 @@ CREATE TABLE IF NOT EXISTS files (
 );
 
 CREATE INDEX IF NOT EXISTS idx_files_folder ON files (folder);
+
+CREATE TABLE IF NOT EXISTS folders (
+  path TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL
+);
