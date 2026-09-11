@@ -302,3 +302,63 @@ a {
 .file-browser__row button:hover {
   border-color: var(--danger);
 }
+
+/* ---------------------------------------------------------------
+   Notion panel content
+----------------------------------------------------------------*/
+.notion-content {
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.notion-block {
+  margin: 0 0 8px;
+}
+
+.notion-h1,
+.notion-h2,
+.notion-h3 {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.notion-h1 {
+  font-size: 15px;
+}
+.notion-h2 {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.notion-h3 {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.notion-todo {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-left: -20px;
+}
+
+.notion-block code {
+  background: var(--panel-raised);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+blockquote.notion-block {
+  border-left: 2px solid var(--accent-dim);
+  padding-left: 10px;
+  color: var(--text-muted);
+}
+
+.notion-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}

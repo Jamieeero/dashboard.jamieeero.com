@@ -1,32 +1,98 @@
-// Notion blocks being framed by most third-party sites, so a plain
-// <iframe src="https://your-page.notion.site/..."> will usually come
-// back blank. The reliable "simple embed" version is: publish the
-// page ("Share" → "Publish to web"), then embed it through a
-// no-code wrapper that's allowed to frame Notion, e.g. Embed.so or
-// Notion2Site — paste that wrapper's embed URL below. If you'd
-// rather skip the wrapper entirely, set NOTION_MODE to 'link' and
-// this panel becomes a plain button that opens your page in a new tab.
-const NOTION_MODE: 'embed' | 'link' = 'embed'
-const NOTION_EMBED_SRC = 'https://embed.so/YOUR_EMBED_ID' // wrapper URL, if using embed mode
-const NOTION_PAGE_URL = 'https://your-workspace.notion.site/your-page'
+import { useEffect, useState } from 'react'
+
+// Public share link, used only for the "Open in Notion" button.
+const NOTION_PAGE_URL = 'https://lean-twister-9bd.notion.site/ebd/3d648c06153680d5ae02d809dd4cd9a8'
+
+interface RichText {
+  plain_text: string
+  annotations?: { bold?: boolean; italic?: boolean; strikethrough?: boolean; code?: boolean }
+  href?: string | null
+}
+
+interface NotionBlock {
+  id: string
+  type: string
+  [key: string]: unknown
+}
+
+function RichTextRun({ items }: { items: RichText[] }) {
+  return (
+    <>
+      {items.map((t, i) => {
+        let node: React.ReactNode = t.plain_text
+        if (t.annotations?.code) node = <code key={i}>{node}</code>
+        if (t.annotations?.bold) node = <strong key={i}>{node}</strong>
+        if (t.annotations?.italic) node = <em key={i}>{node}</em>
+        if (t.annotations?.strikethrough) node = <s key={i}>{node}</s>
+        if (t.href) node = <a key={i} href={t.href} target="_blank" rel="noreferrer">{node}</a>
+        return <span key={i}>{node}</span>
+      })}
+    </>
+  )
+}
+
+function Block({ block }: { block: NotionBlock }) {
+  const data = block[block.type] as { rich_text?: RichText[]; checked?: boolean } | undefined
+  const text = data?.rich_text ?? []
+
+  switch (block.type) {
+    case 'heading_1':
+      return <h3 className="notion-block notion-h1"><RichTextRun items={text} /></h3>
+    case 'heading_2':
+      return <h4 className="notion-block notion-h2"><RichTextRun items={text} /></h4>
+    case 'heading_3':
+      return <h5 className="notion-block notion-h3"><RichTextRun items={text} /></h5>
+    case 'bulleted_list_item':
+      return <li className="notion-block"><RichTextRun items={text} /></li>
+    case 'numbered_list_item':
+      return <li className="notion-block"><RichTextRun items={text} /></li>
+    case 'to_do':
+      return (
+        <li className="notion-block notion-todo">
+          <input type="checkbox" checked={!!data?.checked} readOnly />
+          <RichTextRun items={text} />
+        </li>
+      )
+    case 'quote':
+      return <blockquote className="notion-block"><RichTextRun items={text} /></blockquote>
+    case 'divider':
+      return <hr className="notion-block" />
+    case 'paragraph':
+      if (text.length === 0) return <p className="notion-block notion-empty">&nbsp;</p>
+      return <p className="notion-block"><RichTextRun items={text} /></p>
+    default:
+      return null // unsupported block types (images, embeds, tables, etc.) are skipped for now
+  }
+}
 
 export default function NotionPanel() {
+  const [blocks, setBlocks] = useState<NotionBlock[]>([])
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/notion')
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text())
+        return res.json()
+      })
+      .then(setBlocks)
+      .catch((e) => setError(String(e)))
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <section className="panel panel--notion">
       <header className="panel__header">
         <h2>Notes</h2>
-        <span className="meta">notion</span>
+        <a className="meta" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
+          open in notion →
+        </a>
       </header>
-      <div className="panel__body">
-        {NOTION_MODE === 'embed' ? (
-          <iframe src={NOTION_EMBED_SRC} title="Notion page" loading="lazy" />
-        ) : (
-          <div className="panel__body--padded">
-            <a href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
-              Open Notion page →
-            </a>
-          </div>
-        )}
+      <div className="panel__body panel__body--padded notion-content">
+        {loading && <p className="notion-empty">Loading…</p>}
+        {error && <p className="notion-empty">Couldn't load the page: {error}</p>}
+        {!loading && !error && blocks.map((b) => <Block key={b.id} block={b} />)}
       </div>
     </section>
   )

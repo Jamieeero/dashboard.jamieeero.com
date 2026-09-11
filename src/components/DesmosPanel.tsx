@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 
 // Get a free API key at https://www.desmos.com/api (dev keys work fine
 // for a personal, non-commercial dashboard).
-const DESMOS_API_KEY = 'YOUR_DESMOS_API_KEY'
+const DESMOS_API_KEY = 'ff86c126e11f4b308536aab80d1851af'
 const DESMOS_SCRIPT_SRC = `https://www.desmos.com/api/v1.9/calculator.js?apiKey=${DESMOS_API_KEY}`
 
 declare global {

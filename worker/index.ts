@@ -1,8 +1,13 @@
 import { type Env, listFiles, uploadFile, getFile, deleteFile } from './handlers'
+import { getNotionBlocks, type NotionEnv } from './notion'
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env & NotionEnv): Promise<Response> {
     const url = new URL(request.url)
+
+    if (url.pathname === '/api/notion' && request.method === 'GET') {
+      return getNotionBlocks(env)
+    }
 
     if (url.pathname === '/api/files' && request.method === 'GET') {
       return listFiles(env)
