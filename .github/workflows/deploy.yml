@@ -26,3 +26,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 51a19d6027a152e0d5dfa664a317c118
           command: deploy
+          secrets: |
+            NOTION_TOKEN
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
