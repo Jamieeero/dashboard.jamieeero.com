@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import FullscreenButton from './FullscreenButton'
 
 // Public share link, used only for the "Open in Notion" button.
-const NOTION_PAGE_URL = 'https://lean-twister-9bd.notion.site/ebd/3d648c06153680d5ae02d809dd4cd9a8'
+const NOTION_PAGE_URL = 'https://app.notion.com/p/Homework-3d648c06153680d5ae02d809dd4cd9a8'
 
 interface RichText {
   plain_text: string
