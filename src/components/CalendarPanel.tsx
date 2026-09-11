@@ -2,7 +2,7 @@
 // "Embed code" src URL and paste it below. No auth required for
 // a read-only view of your own calendar.
 const CALENDAR_EMBED_SRC =
-  'https://calendar.google.com/calendar/embed?src=82abb81e3310885564e96a135e9b831624cada41c5033e4a915b350e7e40b2af%40group.calendar.google.com&ctz=America%2FNew_York'
+  'https://calendar.google.com/calendar/embed?src=YOUR_CALENDAR_ID%40group.calendar.google.com&ctz=America%2FNew_York'
 
 export default function CalendarPanel() {
   return (

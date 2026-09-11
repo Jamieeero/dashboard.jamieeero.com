@@ -7,8 +7,8 @@
 // rather skip the wrapper entirely, set NOTION_MODE to 'link' and
 // this panel becomes a plain button that opens your page in a new tab.
 const NOTION_MODE: 'embed' | 'link' = 'embed'
-const NOTION_EMBED_SRC = 'https://lean-twister-9bd.notion.site/ebd//3d648c06153680d5ae02d809dd4cd9a8' // wrapper URL, if using embed mode
-const NOTION_PAGE_URL = 'https://www.notion.so/Homework-3d648c06153680d5ae02d809dd4cd9a8?source=copy_link'
+const NOTION_EMBED_SRC = 'https://embed.so/YOUR_EMBED_ID' // wrapper URL, if using embed mode
+const NOTION_PAGE_URL = 'https://your-workspace.notion.site/your-page'
 
 export default function NotionPanel() {
   return (
