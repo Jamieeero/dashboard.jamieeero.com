@@ -33,10 +33,13 @@ interface NotionPageObject {
   properties: Record<string, NotionProperty>
 }
 
+
+
 function simplifyRow(page: NotionPageObject): NotionRow {
   let title = '(untitled)'
   let date: string | null = null
-  let tag: { name: string; color: string } | null = null
+  let selectTag: { name: string; color: string } | null = null
+  let statusTag: { name: string; color: string } | null = null
   let checked: boolean | null = null
 
   for (const key in page.properties) {
@@ -47,13 +50,19 @@ function simplifyRow(page: NotionPageObject): NotionRow {
     } else if (prop.type === 'date') {
       const d = prop.date as { start?: string } | null
       if (d?.start) date = d.start
-    } else if (prop.type === 'select' || prop.type === 'status') {
-      const option = prop[prop.type] as { name: string; color: string } | null
-      if (option) tag = { name: option.name, color: option.color }
+    } else if (prop.type === 'select') {
+      const option = prop.select as { name: string; color: string } | null
+      if (option) selectTag = { name: option.name, color: option.color }
+    } else if (prop.type === 'status') {
+      const option = prop.status as { name: string; color: string } | null
+      if (option) statusTag = { name: option.name, color: option.color }
     } else if (prop.type === 'checkbox') {
       checked = prop.checkbox as boolean
     }
   }
+
+  // Prefer the 'select' tag (e.g., GameStoryTelling) over the 'status' tag (e.g., Not Started)
+  const tag = selectTag || statusTag
 
   return { id: page.id, title, date, tag, checked }
 }

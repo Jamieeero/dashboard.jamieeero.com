@@ -83,6 +83,34 @@ function Block({ block }: { block: NotionBlock }) {
   }
 }
 
+function formatRelativeDate(dateString: string): string {
+  const target = new Date(dateString + (dateString.length === 10 ? 'T00:00:00' : ''))
+  const today = new Date()
+
+  // Normalize both dates to midnight for accurate day-math
+  today.setHours(0, 0, 0, 0)
+  target.setHours(0, 0, 0, 0)
+
+  const diffTime = target.getTime() - today.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return 'Today'
+  if (diffDays === -1) return 'Yesterday'
+  if (diffDays === 1) return 'Tomorrow'
+
+  // Within the next week
+  if (diffDays > 1 && diffDays < 7) {
+    return 'Next ' + target.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+  // Within the past week
+  if (diffDays < -1 && diffDays > -7) {
+    return target.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  // Fallback for older/future dates
+  return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 function sortRows(rows: NotionRow[]): NotionRow[] {
   return [...rows].sort((a, b) => {
     // Unchecked tasks first, then by date (undated last), then title.
@@ -96,19 +124,28 @@ function sortRows(rows: NotionRow[]): NotionRow[] {
 function TaskRow({ row }: { row: NotionRow }) {
   return (
     <li className={`notion-task${row.checked ? ' notion-task--done' : ''}`}>
-      <input type="checkbox" checked={!!row.checked} readOnly />
-      <span className="notion-task__title">{row.title}</span>
-      {row.tag && (
-        <span className={`notion-tag notion-tag--${row.tag.color}`}>{row.tag.name}</span>
-      )}
-      {row.date && (
-        <span className="notion-task__date">
-          {new Date(row.date + (row.date.length === 10 ? 'T00:00:00' : '')).toLocaleDateString(
-            undefined,
-            { month: 'short', day: 'numeric' }
-          )}
-        </span>
-      )}
+      {/* Title on the far left */}
+      <span className="notion-task__title" style={{ flexGrow: 1, fontWeight: 'bold' }}>
+        {row.title}
+      </span>
+
+      {/* Container for the right-side elements */}
+      <div className="notion-task__meta" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {row.date && (
+          <span className="notion-task__date">
+            {formatRelativeDate(row.date)}
+          </span>
+        )}
+
+        {row.tag && (
+          <span className={`notion-tag notion-tag--${row.tag.color}`}>
+            {row.tag.name}
+          </span>
+        )}
+
+        {/* Checkbox on the far right */}
+        <input type="checkbox" checked={!!row.checked} readOnly />
+      </div>
     </li>
   )
 }
