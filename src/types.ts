@@ -8,3 +8,13 @@ export interface FileEntry {
 }
 
 export type SortKey = 'name' | 'date' | 'size' | 'custom'
+
+export interface StorageStats {
+  count: number
+  totalBytes: number
+}
+
+export interface ShareLinkResult {
+  token: string
+  expiresAt: string
+}
