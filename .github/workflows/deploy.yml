@@ -20,6 +20,13 @@ jobs:
       - run: npm install
       - run: npm run build
 
+      - name: Apply D1 schema
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 51a19d6027a152e0d5dfa664a317c118
+          command: d1 execute jamieeero-dashboard --file=schema.sql --remote
+
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
