@@ -1,53 +1,514 @@
-import {
-  type Env,
-  listFiles,
-  uploadFile,
-  getFile,
-  deleteFile,
-  updateFile,
-  listFolders,
-  createFolder,
-} from './handlers'
-import { getNotionBlocks, type NotionEnv } from './notion'
-import { getCalendarEvents, type CalendarEnv } from './calendar'
+/* ---------------------------------------------------------------
+   Design tokens
+   Palette: dark instrument-panel background, one signal accent.
+   Type: Inter for body/UI copy, IBM Plex Mono for labels, data,
+   and anything that reads as a readout (timestamps, counts, paths).
+----------------------------------------------------------------*/
+:root {
+  --bg: #14171a;
+  --panel: #1b1f24;
+  --panel-raised: #21262d;
+  --border: #2a2f36;
+  --text: #e8eaed;
+  --text-muted: #8b939d;
+  --accent: #4fd1c5;
+  --accent-dim: #2f5c58;
+  --danger: #d97757;
 
-export default {
-  async fetch(request: Request, env: Env & NotionEnv & CalendarEnv): Promise<Response> {
-    const url = new URL(request.url)
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 
-    if (url.pathname === '/api/notion' && request.method === 'GET') {
-      return getNotionBlocks(env)
-    }
+  --radius: 6px;
+  color-scheme: dark;
+}
 
-    if (url.pathname === '/api/calendar' && request.method === 'GET') {
-      return getCalendarEvents(env)
-    }
+* {
+  box-sizing: border-box;
+}
 
-    if (url.pathname === '/api/folders' && request.method === 'GET') {
-      return listFolders(env)
-    }
+html,
+body,
+#root {
+  height: 100%;
+}
 
-    if (url.pathname === '/api/folders' && request.method === 'POST') {
-      return createFolder(request, env)
-    }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
 
-    if (url.pathname === '/api/files' && request.method === 'GET') {
-      return listFiles(env)
-    }
+button,
+input {
+  font-family: inherit;
+}
 
-    if (url.pathname === '/api/files/upload' && request.method === 'POST') {
-      return uploadFile(request, env)
-    }
+a {
+  color: var(--accent);
+}
 
-    const idMatch = url.pathname.match(/^\/api\/files\/([^/]+)$/)
-    if (idMatch) {
-      const id = idMatch[1]
-      if (request.method === 'GET') return getFile(id, env)
-      if (request.method === 'DELETE') return deleteFile(id, env)
-      if (request.method === 'PATCH') return updateFile(id, request, env)
-    }
+/* ---------------------------------------------------------------
+   Shell
+----------------------------------------------------------------*/
+.shell {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 32px 64px;
+}
 
-    // Not an API route — serve the built React app / static files.
-    return env.ASSETS.fetch(request)
-  },
+.shell__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.shell__title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.shell__title span {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.shell__clock {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------
+   Grid — asymmetric instrument-cluster layout.
+   Desktop: calendar wide top-left, notion tall right column,
+   desmos below calendar, file browser spans the full width.
+----------------------------------------------------------------*/
+.grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 2fr 1fr;
+  grid-template-areas:
+    'calendar notion'
+    'desmos   notion'
+    'files    files';
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      'calendar'
+      'notion'
+      'desmos'
+      'files';
+  }
+}
+
+.panel--calendar {
+  grid-area: calendar;
+}
+.panel--notion {
+  grid-area: notion;
+}
+.panel--desmos {
+  grid-area: desmos;
+}
+.panel--files {
+  grid-area: files;
+}
+
+/* ---------------------------------------------------------------
+   Panel chrome
+----------------------------------------------------------------*/
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel__header h2 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.panel__header .meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fullscreen-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.fullscreen-btn:hover {
+  color: var(--text);
+  border-color: var(--accent-dim);
+}
+
+.panel:fullscreen {
+  border-radius: 0;
+  padding: 12px;
+}
+
+.panel:fullscreen .panel__body,
+.panel:fullscreen .panel__body--padded {
+  min-height: 0;
+  flex: 1;
+}
+
+.panel__body {
+  flex: 1;
+  min-height: 0;
+}
+
+.panel__body--padded {
+  padding: 16px;
+}
+
+.panel--calendar .panel__body,
+.panel--desmos .panel__body {
+  min-height: 320px;
+}
+
+.panel--notion .panel__body {
+  min-height: 460px;
+}
+
+.panel iframe {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border: 0;
+  display: block;
+}
+
+/* ---------------------------------------------------------------
+   File browser
+----------------------------------------------------------------*/
+.file-browser {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .file-browser {
+    grid-template-columns: 1fr;
+  }
+}
+
+.folder-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.folder-tree__item {
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.folder-tree__item:hover {
+  background: var(--panel-raised);
+  color: var(--text);
+}
+
+.folder-tree__item--active {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.folder-tree__new {
+  color: var(--accent);
+  margin-top: 4px;
+}
+
+.folder-tree__input {
+  background: var(--panel-raised);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 12px;
+  padding: 6px 8px;
+  margin-top: 4px;
+}
+
+.file-browser__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.file-browser__toolbar select {
+  background: var(--panel-raised);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.dropzone {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.dropzone--active {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.dropzone__folder {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.file-browser__empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.file-browser__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.file-browser__row {
+  display: grid;
+  grid-template-columns: 1fr 70px 90px 120px 28px 60px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+.file-browser__size,
+.file-browser__date {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.file-browser__move {
+  background: var(--panel-raised);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 6px;
+  font-size: 11px;
+  max-width: 120px;
+}
+
+.file-browser__download {
+  color: var(--text-muted);
+  text-decoration: none;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px 0;
+}
+
+.file-browser__download:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.file-browser__row button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--danger);
+  border-radius: var(--radius);
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.file-browser__row button:hover {
+  border-color: var(--danger);
+}
+
+/* ---------------------------------------------------------------
+   Notion panel content
+----------------------------------------------------------------*/
+.notion-content {
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.notion-block {
+  margin: 0 0 8px;
+}
+
+.notion-h1,
+.notion-h2,
+.notion-h3 {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+.notion-h1 {
+  font-size: 15px;
+}
+.notion-h2 {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.notion-h3 {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.notion-todo {
+  list-style: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-left: -20px;
+}
+
+.notion-block code {
+  background: var(--panel-raised);
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+blockquote.notion-block {
+  border-left: 2px solid var(--accent-dim);
+  padding-left: 10px;
+  color: var(--text-muted);
+}
+
+.notion-empty {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.notion-tasklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notion-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.notion-task--done .notion-task__title {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.notion-task__title {
+  flex: 1;
+  font-size: 13px;
+}
+
+.notion-task__date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.notion-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--panel-raised);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------
+   Calendar agenda list
+----------------------------------------------------------------*/
+.agenda {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.agenda__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+.agenda__when {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.agenda__title {
+  font-size: 13px;
+  text-align: right;
 }

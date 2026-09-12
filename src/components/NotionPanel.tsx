@@ -16,6 +16,18 @@ interface NotionBlock {
   [key: string]: unknown
 }
 
+interface NotionRow {
+  id: string
+  title: string
+  date: string | null
+  tag: { name: string; color: string } | null
+  checked: boolean | null
+}
+
+type NotionResponse =
+  | { kind: 'blocks'; blocks: NotionBlock[] }
+  | { kind: 'database'; title: string; rows: NotionRow[] }
+
 function RichTextRun({ items }: { items: RichText[] }) {
   return (
     <>
@@ -66,8 +78,38 @@ function Block({ block }: { block: NotionBlock }) {
   }
 }
 
+function sortRows(rows: NotionRow[]): NotionRow[] {
+  return [...rows].sort((a, b) => {
+    // Unchecked tasks first, then by date (undated last), then title.
+    if (!!a.checked !== !!b.checked) return a.checked ? 1 : -1
+    if (a.date && b.date) return a.date.localeCompare(b.date)
+    if (a.date !== b.date) return a.date ? -1 : 1
+    return a.title.localeCompare(b.title)
+  })
+}
+
+function TaskRow({ row }: { row: NotionRow }) {
+  return (
+    <li className={`notion-task${row.checked ? ' notion-task--done' : ''}`}>
+      <input type="checkbox" checked={!!row.checked} readOnly />
+      <span className="notion-task__title">{row.title}</span>
+      {row.tag && (
+        <span className={`notion-tag notion-tag--${row.tag.color}`}>{row.tag.name}</span>
+      )}
+      {row.date && (
+        <span className="notion-task__date">
+          {new Date(row.date + (row.date.length === 10 ? 'T00:00:00' : '')).toLocaleDateString(
+            undefined,
+            { month: 'short', day: 'numeric' }
+          )}
+        </span>
+      )}
+    </li>
+  )
+}
+
 export default function NotionPanel() {
-  const [blocks, setBlocks] = useState<NotionBlock[]>([])
+  const [data, setData] = useState<NotionResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const panelRef = useRef<HTMLElement>(null)
@@ -78,10 +120,14 @@ export default function NotionPanel() {
         if (!res.ok) throw new Error(await res.text())
         return res.json()
       })
-      .then(setBlocks)
+      .then(setData)
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false))
   }, [])
+
+  const isEmpty =
+    !!data && ((data.kind === 'blocks' && data.blocks.length === 0) ||
+      (data.kind === 'database' && data.rows.length === 0))
 
   return (
     <section className="panel panel--notion" ref={panelRef}>
@@ -97,7 +143,16 @@ export default function NotionPanel() {
       <div className="panel__body panel__body--padded notion-content">
         {loading && <p className="notion-empty">Loading…</p>}
         {error && <p className="notion-empty">Couldn't load the page: {error}</p>}
-        {!loading && !error && blocks.map((b) => <Block key={b.id} block={b} />)}
+        {!loading && !error && isEmpty && <p className="notion-empty">Nothing here yet.</p>}
+        {!loading && !error && data?.kind === 'blocks' &&
+          data.blocks.map((b) => <Block key={b.id} block={b} />)}
+        {!loading && !error && data?.kind === 'database' && (
+          <ul className="notion-tasklist">
+            {sortRows(data.rows).map((row) => (
+              <TaskRow key={row.id} row={row} />
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   )
