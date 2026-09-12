@@ -4,7 +4,7 @@
    Type: Inter for body/UI copy, IBM Plex Mono for labels, data,
    and anything that reads as a readout (timestamps, counts, paths).
 ----------------------------------------------------------------*/
-:root {
+root {
   --bg: #14171a;
   --panel: #1b1f24;
   --panel-raised: #21262d;
