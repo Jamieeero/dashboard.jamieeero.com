@@ -437,6 +437,50 @@ blockquote.notion-block {
   font-size: 13px;
 }
 
+.notion-tasklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notion-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.notion-task--done .notion-task__title {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.notion-task__title {
+  flex: 1;
+  font-size: 13px;
+}
+
+.notion-task__date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.notion-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--panel-raised);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 /* ---------------------------------------------------------------
    Calendar agenda list
 ----------------------------------------------------------------*/
