@@ -254,7 +254,7 @@ function parseIcs(text: string, horizonMs: number): ParsedEvent[] {
 
 export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
   // Split the URLs and remove any empty strings/spaces
-  const urls = env.CALENDAR_ICS_URLS.split(',').map(u => u.trim()).filter(Boolean)
+  const urls = (env.CALENDAR_ICS_URLS || '').split(',').map(u => u.trim()).filter(Boolean)
 
   if (urls.length === 0) {
     return new Response("No calendar URLs configured", { status: 500 })
