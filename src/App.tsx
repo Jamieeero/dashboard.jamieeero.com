@@ -3,6 +3,7 @@ import CalendarPanel from './components/CalendarPanel'
 import DesmosPanel from './components/DesmosPanel'
 import NotionPanel from './components/NotionPanel'
 import FileBrowser from './components/FileBrowser/FileBrowser'
+import QuickLinksPanel from './components/QuickLinksPanel'
 
 export default function App() {
   const [now, setNow] = useState(new Date())
@@ -30,6 +31,7 @@ export default function App() {
       </header>
       <main className="grid">
         <CalendarPanel />
+        <QuickLinksPanel />
         <NotionPanel />
         <DesmosPanel />
         <FileBrowser />
