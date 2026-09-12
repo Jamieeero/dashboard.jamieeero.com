@@ -3,7 +3,7 @@ export interface NotionEnv {
 }
 
 // The page (or database) to display — not secret, safe to hardcode.
-export const NOTION_PAGE_ID = '3d648c06-1536-80d5-ae02-d809dd4cd9a8'
+export const NOTION_PAGE_ID = '3d648c06153680d5ae02d809dd4cd9a8'
 
 const NOTION_HEADERS = (token: string) => ({
   Authorization: `Bearer ${token}`,
@@ -59,8 +59,7 @@ function simplifyRow(page: NotionPageObject): NotionRow {
 }
 
 export async function getNotionContent(env: NotionEnv): Promise<Response> {
-  // Try it as a database first (this is what a Notion "table" page like a
-  // task list actually is under the hood).
+  // 1. Try it as a database first
   const dbRes = await fetch(`https://api.notion.com/v1/databases/${NOTION_PAGE_ID}/query`, {
     method: 'POST',
     headers: NOTION_HEADERS(env.NOTION_TOKEN),
@@ -84,7 +83,7 @@ export async function getNotionContent(env: NotionEnv): Promise<Response> {
     })
   }
 
-  // Not a database — render it as a normal block-based page instead.
+  // 2. Not a direct database — render it as a page's blocks instead.
   const blocksRes = await fetch(
     `https://api.notion.com/v1/blocks/${NOTION_PAGE_ID}/children?page_size=100`,
     { headers: NOTION_HEADERS(env.NOTION_TOKEN) }
@@ -95,6 +94,31 @@ export async function getNotionContent(env: NotionEnv): Promise<Response> {
     return new Response(`Notion API error: ${blocksRes.status} ${body}`, { status: 502 })
   }
 
-  const data = await blocksRes.json<{ results: unknown[] }>()
+  const data = await blocksRes.json<{ results: NotionBlock[] }>()
+
+  // 3. NEW LOGIC: Look for an inline database inside this page
+  const dbBlock = data.results.find((b) => b.type === 'child_database')
+
+  if (dbBlock) {
+    // We found the inline database! Use its specific ID to fetch the rows.
+    const inlineDbRes = await fetch(`https://api.notion.com/v1/databases/${dbBlock.id}/query`, {
+      method: 'POST',
+      headers: NOTION_HEADERS(env.NOTION_TOKEN),
+      body: JSON.stringify({ page_size: 50 }),
+    })
+
+    if (inlineDbRes.ok) {
+      const inlineData = await inlineDbRes.json<{ results: NotionPageObject[] }>()
+      const dbDetails = dbBlock.child_database as { title: string }
+
+      return Response.json({
+        kind: 'database',
+        title: dbDetails.title || 'Notes',
+        rows: inlineData.results.map(simplifyRow),
+      })
+    }
+  }
+
+  // 4. If no database was found at all, return the standard text blocks
   return Response.json({ kind: 'blocks', blocks: data.results })
 }
