@@ -261,16 +261,33 @@ export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
   }
 
   const text = await res.text()
+
+  // Calculate boundaries for exactly today
   const startOfToday = new Date()
   startOfToday.setHours(0, 0, 0, 0)
-  // Only expand recurrence out to a bounded horizon — plenty for an agenda view.
-  const horizonMs = startOfToday.getTime() + 120 * 24 * 60 * 60 * 1000
+
+  const endOfToday = new Date(startOfToday)
+  endOfToday.setDate(endOfToday.getDate() + 1)
+
+  // Expand recurrences slightly past today to account for timezone shifts
+  const horizonMs = endOfToday.getTime() + 7 * 24 * 60 * 60 * 1000
   const events = parseIcs(text, horizonMs)
 
-  const upcoming = events
-    .filter((e) => new Date(e.start) >= startOfToday)
-    .sort((a, b) => a.start.localeCompare(b.start))
-    .slice(0, 20)
+  // Filter for events that happen today
+  const todaysEvents = events
+    .filter((e) => {
+      // Ensure allDay events correctly parse as local midnight instead of UTC offset
+      const eStart = e.allDay ? new Date(`${e.start}T00:00:00`).getTime() : new Date(e.start).getTime()
 
-  return Response.json(upcoming)
-}
+      // If there is no end time or it's all day, default to end of that day
+      const eEnd = e.allDay
+        ? new Date(`${e.start}T23:59:59`).getTime()
+        : new Date(e.end).getTime()
+
+      // Event overlaps with today if it starts before today ends AND ends after today starts
+      return eStart < endOfToday.getTime() && eEnd > startOfToday.getTime()
+    })
+    .sort((a, b) => a.start.localeCompare(b.start))
+
+  return Response.json(todaysEvents)
+}}
