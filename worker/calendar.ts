@@ -290,4 +290,4 @@ export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
     .sort((a, b) => a.start.localeCompare(b.start))
 
   return Response.json(todaysEvents)
-}}
+}
