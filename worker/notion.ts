@@ -3,7 +3,7 @@ export interface NotionEnv {
 }
 
 // The page (or database) to display — not secret, safe to hardcode.
-export const NOTION_PAGE_ID = 'Homework-3d648c06153680d5ae02d809dd4cd9a8'
+export const NOTION_PAGE_ID = '3d648c06-1536-80d5-ae02-d809dd4cd9a8'
 
 const NOTION_HEADERS = (token: string) => ({
   Authorization: `Bearer ${token}`,
