@@ -74,7 +74,12 @@ function Block({ block }: { block: NotionBlock }) {
       if (text.length === 0) return <p className="notion-block notion-empty">&nbsp;</p>
       return <p className="notion-block"><RichTextRun items={text} /></p>
     default:
-      return null // unsupported block types (images, embeds, tables, etc.) are skipped for now
+      // Temporarily render the unsupported block type to the screen
+      return (
+        <div className="notion-block" style={{ color: 'red', fontSize: '12px' }}>
+          [Unsupported block: {block.type}]
+        </div>
+      )
   }
 }
 
