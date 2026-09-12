@@ -8,7 +8,7 @@ import {
   listFolders,
   createFolder,
 } from './handlers'
-import { getNotionBlocks, type NotionEnv } from './notion'
+import { getNotionContent, type NotionEnv } from './notion'
 import { getCalendarEvents, type CalendarEnv } from './calendar'
 
 export default {
@@ -16,7 +16,7 @@ export default {
     const url = new URL(request.url)
 
     if (url.pathname === '/api/notion' && request.method === 'GET') {
-      return getNotionBlocks(env)
+      return getNotionContent(env)
     }
 
     if (url.pathname === '/api/calendar' && request.method === 'GET') {
