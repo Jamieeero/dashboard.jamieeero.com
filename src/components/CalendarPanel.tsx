@@ -7,7 +7,7 @@ interface CalendarEvent {
   start: string
   end: string
   allDay: boolean
-  color?: string // Added color property
+  color?: string
 }
 
 const PIXELS_PER_MINUTE = 1.5
@@ -63,7 +63,8 @@ export default function CalendarPanel() {
     <section
       className="panel panel--calendar"
       ref={panelRef}
-      style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+      // ADDED maxHeight here to constrain the panel and force internal scrolling
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '500px' }}
     >
       <header className="panel__header" style={{ flexShrink: 0 }}>
         <h2>Today</h2>
@@ -81,9 +82,9 @@ export default function CalendarPanel() {
 
         {!loading && !error && events.length > 0 && (
           <>
-            {/* All-Day Events Section */}
+            {/* All-Day Events Section (Pinned to top, doesn't scroll) */}
             {allDayEvents.length > 0 && (
-              <div style={{ borderBottom: '1px solid #e0e0e0', padding: '8px 8px 8px 60px' }}>
+              <div style={{ borderBottom: '1px solid #e0e0e0', padding: '8px 8px 8px 60px', flexShrink: 0 }}>
                 {allDayEvents.map(event => (
                   <div key={event.id} style={{
                     backgroundColor: event.color || '#4285F4',
@@ -138,26 +139,20 @@ export default function CalendarPanel() {
                 const boundedEnd = endMins === 0 ? 1440 : Math.min(1440, endMins)
                 const height = Math.max(15, (boundedEnd - boundedStart) * PIXELS_PER_MINUTE)
 
-                // --- OVERLAP ALGORITHM ---
-                // Find all events that overlap with this specific event
                 const overlappingEvents = timeEvents.filter(otherEvent => {
                   const otherStart = new Date(otherEvent.start).getTime()
                   const otherEnd = new Date(otherEvent.end).getTime()
                   return otherStart < endDate.getTime() && otherEnd > startDate.getTime()
                 })
 
-                // Determine this event's position among the overlapping ones
                 const overlapIndex = overlappingEvents.findIndex(e => e.id === event.id)
                 const totalOverlaps = overlappingEvents.length
 
-                // Calculate CSS properties for side-by-side placement
                 const baseLeft = 65
                 const rightPadding = 15
-                // CSS calc() string to dynamically split the width
                 const widthStyle = `calc((100% - ${baseLeft + rightPadding}px) / ${totalOverlaps})`
                 const leftStyle = `calc(${baseLeft}px + ((100% - ${baseLeft + rightPadding}px) / ${totalOverlaps} * ${overlapIndex}))`
 
-                // Darken the base color slightly for the left border
                 const bgColor = event.color || '#4285F4'
 
                 return (
@@ -176,8 +171,8 @@ export default function CalendarPanel() {
                       fontSize: '0.85rem',
                       overflow: 'hidden',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      borderLeft: '4px solid rgba(0,0,0,0.2)', // Generic dark border instead of hardcoded blue
-                      borderRight: totalOverlaps > 1 ? '1px solid white' : 'none' // Separate touching blocks
+                      borderLeft: '4px solid rgba(0,0,0,0.2)',
+                      borderRight: totalOverlaps > 1 ? '1px solid white' : 'none'
                     }}
                   >
                     <div style={{ fontWeight: '600', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>

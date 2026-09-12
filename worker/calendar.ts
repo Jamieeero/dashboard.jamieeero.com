@@ -1,7 +1,6 @@
 export interface CalendarEnv {
   // Support both the new plural and old singular variable names
   CALENDAR_ICS_URLS?: string
-  CALENDAR_ICS_URL?: string
 }
 
 interface ParsedEvent {
@@ -254,49 +253,40 @@ function parseIcs(text: string, horizonMs: number): ParsedEvent[] {
 }
 
 export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
+  // Split the URLs and remove any empty strings/spaces
+  const urls = env.CALENDAR_ICS_URLS.split(',').map(u => u.trim()).filter(Boolean)
+
+  if (urls.length === 0) {
+    return new Response("No calendar URLs configured", { status: 500 })
+  }
+
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+  const endOfToday = new Date(startOfToday)
+  endOfToday.setDate(endOfToday.getDate() + 1)
+
+  const horizonMs = endOfToday.getTime() + 7 * 24 * 60 * 60 * 1000
+
+  // Google Calendar-style colors to assign to each feed
+  const palette = ['#4285F4', '#33B679', '#D50000', '#8E24AA', '#F6BF26', '#F4511E']
+
   try {
-    // Safely grab URLs, falling back to the old variable name if the new one isn't set
-    const rawUrls = env.CALENDAR_ICS_URLS || env.CALENDAR_ICS_URL || ''
-    const urls = rawUrls.split(',').map(u => u.trim()).filter(Boolean)
-
-    if (urls.length === 0) {
-      return new Response("No calendar URLs configured in Worker secrets", { status: 500 })
-    }
-
-    const startOfToday = new Date()
-    startOfToday.setHours(0, 0, 0, 0)
-    const endOfToday = new Date(startOfToday)
-    endOfToday.setDate(endOfToday.getDate() + 1)
-
-    const horizonMs = endOfToday.getTime() + 7 * 24 * 60 * 60 * 1000
-
-    // Google Calendar-style colors to assign to each feed
-    const palette = ['#4285F4', '#33B679', '#D50000', '#8E24AA', '#F6BF26', '#F4511E']
-
     // Fetch and parse all calendars concurrently
     const fetchPromises = urls.map(async (url, index) => {
-      try {
-        const res = await fetch(url)
-        if (!res.ok) {
-          console.error(`Failed to fetch calendar ${index}: ${res.status}`)
-          return [] // Return empty array so one broken URL doesn't break the whole app
-        }
+      const res = await fetch(url)
+      if (!res.ok) return []
 
-        const text = await res.text()
-        const events = parseIcs(text, horizonMs)
-        const color = palette[index % palette.length]
+      const text = await res.text()
+      const events = parseIcs(text, horizonMs)
+      const color = palette[index % palette.length]
 
-        return events
-          .filter((e) => {
-            const eStart = e.allDay ? new Date(`${e.start}T00:00:00`).getTime() : new Date(e.start).getTime()
-            const eEnd = e.allDay ? new Date(`${e.start}T23:59:59`).getTime() : new Date(e.end).getTime()
-            return eStart < endOfToday.getTime() && eEnd > startOfToday.getTime()
-          })
-          .map(e => ({ ...e, color }))
-      } catch (err) {
-        console.error(`Error parsing calendar ${index}:`, err)
-        return []
-      }
+      return events
+        .filter((e) => {
+          const eStart = e.allDay ? new Date(`${e.start}T00:00:00`).getTime() : new Date(e.start).getTime()
+          const eEnd = e.allDay ? new Date(`${e.start}T23:59:59`).getTime() : new Date(e.end).getTime()
+          return eStart < endOfToday.getTime() && eEnd > startOfToday.getTime()
+        })
+        .map(e => ({ ...e, color })) // Inject the color into the event object
     })
 
     const allEventArrays = await Promise.all(fetchPromises)
@@ -307,10 +297,7 @@ export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
       .sort((a, b) => a.start.localeCompare(b.start))
 
     return Response.json(todaysEvents)
-
   } catch (err) {
-    // If a top-level crash happens, return a clean text response instead of Cloudflare's HTML page
-    const errorMessage = err instanceof Error ? err.message : String(err)
-    return new Response(`Worker crashed: ${errorMessage}`, { status: 500 })
+    return new Response(`Calendar fetch error: ${err}`, { status: 502 })
   }
 }
