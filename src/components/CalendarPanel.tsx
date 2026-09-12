@@ -7,9 +7,9 @@ interface CalendarEvent {
   start: string
   end: string
   allDay: boolean
+  color?: string // Added color property
 }
 
-// Controls the vertical height of the calendar. 1.5 means 1 hour = 90px.
 const PIXELS_PER_MINUTE = 1.5
 const HOURS = Array.from({ length: 24 }, (_, i) => i)
 
@@ -29,7 +29,6 @@ export default function CalendarPanel() {
   const panelRef = useRef<HTMLElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Fetch events
   useEffect(() => {
     fetch('/api/calendar')
       .then(async (res) => {
@@ -41,21 +40,18 @@ export default function CalendarPanel() {
       .finally(() => setLoading(false))
   }, [])
 
-  // Live "Now" line tracker
   useEffect(() => {
     const updateNow = () => {
       const now = new Date()
       setNowMinutes(now.getHours() * 60 + now.getMinutes())
     }
-    updateNow() // Initial set
-    const interval = setInterval(updateNow, 60000) // Update every minute
+    updateNow()
+    const interval = setInterval(updateNow, 60000)
     return () => clearInterval(interval)
   }, [])
 
-  // Auto-scroll to current time on load
   useEffect(() => {
     if (!loading && scrollRef.current) {
-      // Scroll to current time minus 2 hours for comfortable padding
       scrollRef.current.scrollTop = Math.max(0, (nowMinutes * PIXELS_PER_MINUTE) - (120 * PIXELS_PER_MINUTE))
     }
   }, [loading, nowMinutes])
@@ -72,7 +68,6 @@ export default function CalendarPanel() {
       <header className="panel__header" style={{ flexShrink: 0 }}>
         <h2>Today</h2>
         <div className="panel__header-actions">
-          <span className="meta">google</span>
           <FullscreenButton targetRef={panelRef} />
         </div>
       </header>
@@ -86,12 +81,12 @@ export default function CalendarPanel() {
 
         {!loading && !error && events.length > 0 && (
           <>
-            {/* All-Day Events Section (Pinned to top) */}
+            {/* All-Day Events Section */}
             {allDayEvents.length > 0 && (
               <div style={{ borderBottom: '1px solid #e0e0e0', padding: '8px 8px 8px 60px' }}>
                 {allDayEvents.map(event => (
                   <div key={event.id} style={{
-                    backgroundColor: '#4285F4',
+                    backgroundColor: event.color || '#4285F4',
                     color: 'white',
                     borderRadius: '4px',
                     padding: '2px 8px',
@@ -106,75 +101,64 @@ export default function CalendarPanel() {
             )}
 
             {/* Scrollable Time Grid */}
-            <div
-              ref={scrollRef}
-              style={{ flex: 1, position: 'relative', overflowY: 'auto', paddingBottom: '2rem' }}
-            >
+            <div ref={scrollRef} style={{ flex: 1, position: 'relative', overflowY: 'auto', paddingBottom: '2rem' }}>
 
-              {/* Background Grid Lines & Labels */}
+              {/* Background Grid Lines */}
               {HOURS.map((hour) => (
-                <div key={hour} style={{
-                  position: 'relative',
-                  height: `${60 * PIXELS_PER_MINUTE}px`
-                }}>
-                  {/* Time Label */}
+                <div key={hour} style={{ position: 'relative', height: `${60 * PIXELS_PER_MINUTE}px` }}>
                   <span style={{
-                    position: 'absolute',
-                    top: '-8px',
-                    left: '8px',
-                    fontSize: '0.75rem',
-                    color: '#70757a',
-                    width: '45px',
-                    textAlign: 'right'
+                    position: 'absolute', top: '-8px', left: '8px',
+                    fontSize: '0.75rem', color: '#70757a', width: '45px', textAlign: 'right'
                   }}>
                     {formatHourLabel(hour)}
                   </span>
-                  {/* Grid Line */}
-                  <div style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: '60px',
-                    right: 0,
-                    borderTop: '1px solid #e0e0e0'
-                  }} />
+                  <div style={{ position: 'absolute', top: 0, left: '60px', right: 0, borderTop: '1px solid #e0e0e0' }} />
                 </div>
               ))}
 
               {/* Red "Now" Indicator Line */}
               <div style={{
-                position: 'absolute',
-                top: `${nowMinutes * PIXELS_PER_MINUTE}px`,
-                left: '52px', // Pulled slightly left for the circle
-                right: 0,
-                height: '2px',
-                backgroundColor: '#EA4335',
-                zIndex: 10,
-                pointerEvents: 'none'
+                position: 'absolute', top: `${nowMinutes * PIXELS_PER_MINUTE}px`,
+                left: '52px', right: 0, height: '2px', backgroundColor: '#EA4335', zIndex: 10, pointerEvents: 'none'
               }}>
                 <div style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: '-4px',
-                  width: '10px',
-                  height: '10px',
-                  borderRadius: '50%',
-                  backgroundColor: '#EA4335'
+                  position: 'absolute', left: 0, top: '-4px', width: '10px', height: '10px',
+                  borderRadius: '50%', backgroundColor: '#EA4335'
                 }} />
               </div>
 
-              {/* Scheduled Events Blocks */}
+              {/* Scheduled Events Blocks with Overlap Logic */}
               {timeEvents.map((event) => {
                 const startDate = new Date(event.start)
                 const endDate = new Date(event.end)
-
                 const startMins = startDate.getHours() * 60 + startDate.getMinutes()
                 const endMins = endDate.getHours() * 60 + endDate.getMinutes()
 
-                // Handle events stretching past midnight safely for standard 1-day rendering
                 const boundedStart = Math.max(0, startMins)
                 const boundedEnd = endMins === 0 ? 1440 : Math.min(1440, endMins)
+                const height = Math.max(15, (boundedEnd - boundedStart) * PIXELS_PER_MINUTE)
 
-                const height = Math.max(15, (boundedEnd - boundedStart) * PIXELS_PER_MINUTE) // Minimum 15px height
+                // --- OVERLAP ALGORITHM ---
+                // Find all events that overlap with this specific event
+                const overlappingEvents = timeEvents.filter(otherEvent => {
+                  const otherStart = new Date(otherEvent.start).getTime()
+                  const otherEnd = new Date(otherEvent.end).getTime()
+                  return otherStart < endDate.getTime() && otherEnd > startDate.getTime()
+                })
+
+                // Determine this event's position among the overlapping ones
+                const overlapIndex = overlappingEvents.findIndex(e => e.id === event.id)
+                const totalOverlaps = overlappingEvents.length
+
+                // Calculate CSS properties for side-by-side placement
+                const baseLeft = 65
+                const rightPadding = 15
+                // CSS calc() string to dynamically split the width
+                const widthStyle = `calc((100% - ${baseLeft + rightPadding}px) / ${totalOverlaps})`
+                const leftStyle = `calc(${baseLeft}px + ((100% - ${baseLeft + rightPadding}px) / ${totalOverlaps} * ${overlapIndex}))`
+
+                // Darken the base color slightly for the left border
+                const bgColor = event.color || '#4285F4'
 
                 return (
                   <div
@@ -182,23 +166,23 @@ export default function CalendarPanel() {
                     style={{
                       position: 'absolute',
                       top: `${boundedStart * PIXELS_PER_MINUTE}px`,
-                      left: '65px', // Sit just right of the timeline
-                      right: '15px',
+                      left: leftStyle,
+                      width: widthStyle,
                       height: `${height}px`,
-                      backgroundColor: '#4285F4',
+                      backgroundColor: bgColor,
                       color: 'white',
                       borderRadius: '4px',
                       padding: '4px 8px',
                       fontSize: '0.85rem',
                       overflow: 'hidden',
                       boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                      borderLeft: '4px solid #1a73e8' // Google Calendar darker edge visual
+                      borderLeft: '4px solid rgba(0,0,0,0.2)', // Generic dark border instead of hardcoded blue
+                      borderRight: totalOverlaps > 1 ? '1px solid white' : 'none' // Separate touching blocks
                     }}
                   >
                     <div style={{ fontWeight: '600', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
                       {event.summary}
                     </div>
-                    {/* Only show time if the block is tall enough */}
                     {height > 30 && (
                       <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>
                         {startDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
