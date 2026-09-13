@@ -196,6 +196,107 @@ a {
   gap: 10px;
 }
 
+.open-in-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
+  color: var(--accent);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: var(--radius-xs);
+  box-shadow:
+    3px 3px 7px var(--shadow-dark),
+    -3px -3px 7px var(--shadow-light);
+  transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.open-in-btn:hover {
+  color: var(--accent-2-deep);
+}
+
+.open-in-btn:active {
+  box-shadow:
+    inset 2px 2px 5px var(--shadow-dark),
+    inset -2px -2px 5px var(--shadow-light);
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.calendar-nav__btn {
+  background: var(--bg);
+  border: none;
+  color: var(--accent);
+  border-radius: var(--radius-xs);
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow:
+    2px 2px 5px var(--shadow-dark),
+    -2px -2px 5px var(--shadow-light);
+}
+
+.calendar-nav__btn:hover {
+  color: var(--accent-2-deep);
+}
+
+.calendar-nav__btn:active {
+  box-shadow:
+    inset 2px 2px 5px var(--shadow-dark),
+    inset -2px -2px 5px var(--shadow-light);
+}
+
+.calendar-nav__date {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  color: var(--text);
+  border: none;
+  border-radius: var(--radius-xs);
+  padding: 5px 9px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  box-shadow:
+    inset 3px 3px 6px var(--shadow-dark),
+    inset -3px -3px 6px var(--shadow-light);
+  outline: none;
+  cursor: pointer;
+}
+
+.calendar-nav__today {
+  flex-shrink: 0;
+  background: var(--bg);
+  border: none;
+  color: var(--text-muted);
+  border-radius: var(--radius-xs);
+  padding: 5px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  box-shadow:
+    2px 2px 5px var(--shadow-dark),
+    -2px -2px 5px var(--shadow-light);
+}
+
+.calendar-nav__today:hover {
+  color: var(--accent);
+}
+
 .fullscreen-btn {
   background: var(--bg);
   border: none;
@@ -395,6 +496,50 @@ a {
 @media (max-width: 600px) {
   .file-browser {
     grid-template-columns: 1fr;
+  }
+
+  .file-browser__toolbar {
+    flex-wrap: wrap;
+  }
+
+  .file-browser__toolbar select {
+    flex: 1 1 100%;
+  }
+
+  .file-browser__bulkbar {
+    flex-wrap: wrap;
+  }
+
+  /* Column headers don't mean much once rows stop being a grid. */
+  .file-browser__row--head {
+    display: none;
+  }
+
+  .file-browser__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    padding: 12px 4px;
+  }
+
+  .file-browser__name {
+    flex: 1 1 100%;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .file-browser__size,
+  .file-browser__date {
+    font-size: 11px;
+  }
+
+  .file-browser__move {
+    max-width: 130px;
+  }
+
+  .file-browser__actions {
+    margin-left: auto;
   }
 }
 

@@ -35,7 +35,7 @@ export default {
     }
 
     if (url.pathname === '/api/calendar' && request.method === 'GET') {
-      return getCalendarEvents(env)
+      return getCalendarEvents(env, url.searchParams.get('date') ?? undefined)
     }
 
     if (url.pathname === '/api/storage' && request.method === 'GET') {

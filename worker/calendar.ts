@@ -252,7 +252,7 @@ function parseIcs(text: string, horizonMs: number): ParsedEvent[] {
   return events
 }
 
-export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
+export async function getCalendarEvents(env: CalendarEnv, dateStr?: string): Promise<Response> {
   // Split the URLs and remove any empty strings/spaces
   const urls = (env.CALENDAR_ICS_URLS || '').split(',').map(u => u.trim()).filter(Boolean)
 
@@ -260,10 +260,14 @@ export async function getCalendarEvents(env: CalendarEnv): Promise<Response> {
     return new Response("No calendar URLs configured", { status: 500 })
   }
 
-  const startOfToday = new Date()
-  startOfToday.setHours(0, 0, 0, 0)
-  const endOfToday = new Date(startOfToday)
-  endOfToday.setDate(endOfToday.getDate() + 1)
+  // Accept an optional ?date=YYYY-MM-DD to render a day other than today.
+  const targetDate = dateStr && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+    ? dateStr
+    : new Date().toISOString().slice(0, 10)
+  const [ty, tm, td] = targetDate.split('-').map(Number)
+
+  const startOfToday = new Date(Date.UTC(ty, tm - 1, td))
+  const endOfToday = new Date(Date.UTC(ty, tm - 1, td + 1))
 
   const horizonMs = endOfToday.getTime() + 7 * 24 * 60 * 60 * 1000
 

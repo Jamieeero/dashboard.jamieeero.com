@@ -20,17 +20,40 @@ function formatHourLabel(hour: number) {
   return `${h} ${ampm}`
 }
 
+// Local (not UTC) YYYY-MM-DD, matching what a <input type="date"> expects.
+function toDateInputValue(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function formatHeaderDate(dateStr: string): string {
+  const d = new Date(`${dateStr}T00:00:00`)
+  return d.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
 export default function CalendarPanel() {
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [nowMinutes, setNowMinutes] = useState(0)
+  const [selectedDate, setSelectedDate] = useState(() => toDateInputValue(new Date()))
 
   const panelRef = useRef<HTMLElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
+  const isToday = selectedDate === toDateInputValue(new Date())
+
+  function shiftDay(delta: number) {
+    const d = new Date(`${selectedDate}T00:00:00`)
+    d.setDate(d.getDate() + delta)
+    setSelectedDate(toDateInputValue(d))
+  }
+
   useEffect(() => {
-    fetch('/api/calendar')
+    setLoading(true)
+    fetch(`/api/calendar?date=${selectedDate}`)
       .then(async (res) => {
         if (!res.ok) throw new Error(await res.text())
         return res.json()
@@ -38,7 +61,7 @@ export default function CalendarPanel() {
       .then(setEvents)
       .catch((e) => setError(String(e)))
       .finally(() => setLoading(false))
-  }, [])
+  }, [selectedDate])
 
   useEffect(() => {
     const updateNow = () => {
@@ -52,9 +75,11 @@ export default function CalendarPanel() {
 
   useEffect(() => {
     if (!loading && scrollRef.current) {
-      scrollRef.current.scrollTop = Math.max(0, (nowMinutes * PIXELS_PER_MINUTE) - (120 * PIXELS_PER_MINUTE))
+      // Center on "now" only when viewing today; otherwise start near the top.
+      const scrollTarget = isToday ? Math.max(0, (nowMinutes * PIXELS_PER_MINUTE) - (120 * PIXELS_PER_MINUTE)) : 0
+      scrollRef.current.scrollTop = scrollTarget
     }
-  }, [loading, nowMinutes])
+  }, [loading, nowMinutes, isToday, selectedDate])
 
   const allDayEvents = events.filter((e) => e.allDay)
   const timeEvents = events.filter((e) => !e.allDay)
@@ -64,20 +89,44 @@ export default function CalendarPanel() {
       className="panel panel--calendar"
       ref={panelRef}
       // ADDED maxHeight here to constrain the panel and force internal scrolling
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '500px' }}
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', maxHeight: '560px' }}
     >
       <header className="panel__header" style={{ flexShrink: 0 }}>
-        <h2>Today</h2>
+        <h2>{isToday ? 'Today' : formatHeaderDate(selectedDate)}</h2>
         <div className="panel__header-actions">
+          <a
+            className="open-in-btn"
+            href={`https://calendar.google.com/calendar/r/day/${Number(selectedDate.slice(0, 4))}/${Number(selectedDate.slice(5, 7))}/${Number(selectedDate.slice(8, 10))}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            open in calendar ↗
+          </a>
           <FullscreenButton targetRef={panelRef} />
         </div>
       </header>
+
+      <div className="calendar-nav">
+        <button className="calendar-nav__btn" onClick={() => shiftDay(-1)} aria-label="Previous day">‹</button>
+        <input
+          type="date"
+          className="calendar-nav__date"
+          value={selectedDate}
+          onChange={(e) => e.target.value && setSelectedDate(e.target.value)}
+        />
+        <button className="calendar-nav__btn" onClick={() => shiftDay(1)} aria-label="Next day">›</button>
+        {!isToday && (
+          <button className="calendar-nav__today" onClick={() => setSelectedDate(toDateInputValue(new Date()))}>
+            Today
+          </button>
+        )}
+      </div>
 
       <div className="panel__body" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {loading && <p className="notion-empty" style={{ padding: '1rem' }}>Loading…</p>}
         {error && <p className="notion-empty" style={{ padding: '1rem' }}>Couldn't load events: {error}</p>}
         {!loading && !error && events.length === 0 && (
-          <p className="notion-empty" style={{ padding: '1rem' }}>Nothing scheduled for today.</p>
+          <p className="notion-empty" style={{ padding: '1rem' }}>Nothing scheduled for this day.</p>
         )}
 
         {!loading && !error && events.length > 0 && (
@@ -117,16 +166,18 @@ export default function CalendarPanel() {
                 </div>
               ))}
 
-              {/* Red "Now" Indicator Line */}
-              <div style={{
-                position: 'absolute', top: `${nowMinutes * PIXELS_PER_MINUTE}px`,
-                left: '52px', right: 0, height: '2px', backgroundColor: '#EA4335', zIndex: 10, pointerEvents: 'none'
-              }}>
+              {/* Red "Now" Indicator Line — only meaningful when viewing today */}
+              {isToday && (
                 <div style={{
-                  position: 'absolute', left: 0, top: '-4px', width: '10px', height: '10px',
-                  borderRadius: '50%', backgroundColor: '#EA4335'
-                }} />
-              </div>
+                  position: 'absolute', top: `${nowMinutes * PIXELS_PER_MINUTE}px`,
+                  left: '52px', right: 0, height: '2px', backgroundColor: '#EA4335', zIndex: 10, pointerEvents: 'none'
+                }}>
+                  <div style={{
+                    position: 'absolute', left: 0, top: '-4px', width: '10px', height: '10px',
+                    borderRadius: '50%', backgroundColor: '#EA4335'
+                  }} />
+                </div>
+              )}
 
               {/* Scheduled Events Blocks with Overlap Logic */}
               {timeEvents.map((event) => {

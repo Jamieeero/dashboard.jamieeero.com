@@ -176,8 +176,8 @@ export default function NotionPanel() {
       <header className="panel__header">
         <h2>Notes</h2>
         <div className="panel__header-actions">
-          <a className="meta" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
-            open in notion →
+          <a className="open-in-btn" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
+            open in notion ↗
           </a>
           <FullscreenButton targetRef={panelRef} />
         </div>
