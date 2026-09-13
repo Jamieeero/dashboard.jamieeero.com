@@ -18,8 +18,14 @@
   --accent-2-deep: #4a614f;
   --danger: #a15b4f;
 
-  --shadow-light: #ffffff;
+  /* MODIFIED: Less harsh white, closer to the --bg color */
+  --shadow-light: #f0ebe0;
   --shadow-dark: #b7ae9c;
+
+  /* NEW: Lighting tokens for recessed areas and subtle edges */
+  --shadow-light-recessed: rgba(240, 235, 224, 0.45);
+  --shadow-dark-recessed: rgba(183, 174, 156, 0.45);
+  --edge-subtle: rgba(255, 255, 255, 0.25);
 
   --font-body: 'Inter', system-ui, sans-serif;
   --font-heading: 'Quicksand', sans-serif;
@@ -156,14 +162,14 @@ a {
 ----------------------------------------------------------------*/
 .panel {
   background: var(--panel);
-  border: none;
+  border: 1px solid var(--edge-subtle); /* Added subtle edge */
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow:
-    10px 10px 22px var(--shadow-dark),
-    -10px -10px 22px var(--shadow-light);
+          10px 10px 22px var(--shadow-dark),
+          -10px -10px 22px var(--shadow-light);
 }
 
 .panel__header {
@@ -272,9 +278,10 @@ a {
   padding: 5px 9px;
   font-size: 12px;
   font-family: var(--font-mono);
+  /* MODIFIED: Shallower spread and softer recessed tokens */
   box-shadow:
-    inset 3px 3px 6px var(--shadow-dark),
-    inset -3px -3px 6px var(--shadow-light);
+          inset 2px 2px 4px var(--shadow-dark-recessed),
+          inset -2px -2px 4px var(--shadow-light-recessed);
   outline: none;
   cursor: pointer;
 }
@@ -524,14 +531,14 @@ a {
     background: var(--bg);
     padding-right: 8px;
     box-shadow:
-      3px 3px 6px var(--shadow-dark),
-      -3px -3px 6px var(--shadow-light);
+            3px 3px 6px var(--shadow-dark),
+            -3px -3px 6px var(--shadow-light);
   }
 
   .folder-tree__row--active {
     box-shadow:
-      inset 3px 3px 6px var(--shadow-dark),
-      inset -3px -3px 6px var(--shadow-light);
+            inset 2px 2px 5px var(--shadow-dark-recessed),
+            inset -2px -2px 5px var(--shadow-light-recessed);
   }
 
   .folder-tree__row--active .folder-tree__actions {
@@ -572,8 +579,8 @@ a {
     border-radius: var(--radius-sm);
     margin-bottom: 16px;
     box-shadow:
-      5px 5px 12px var(--shadow-dark),
-      -5px -5px 12px var(--shadow-light);
+            5px 5px 12px var(--shadow-dark),
+            -5px -5px 12px var(--shadow-light);
   }
 
   /* File Card Grid Placement */
@@ -643,8 +650,8 @@ a {
 .folder-tree__row--active {
   background: var(--panel-raised);
   box-shadow:
-    inset 3px 3px 6px var(--shadow-dark),
-    inset -3px -3px 6px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark-recessed),
+          inset -2px -2px 5px var(--shadow-light-recessed);
 }
 
 .folder-tree__row--dragover {
@@ -709,8 +716,8 @@ a {
   padding: 7px 9px;
   width: 100%;
   box-shadow:
-    inset 3px 3px 6px var(--shadow-dark),
-    inset -3px -3px 6px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark-recessed),
+          inset -2px -2px 5px var(--shadow-light-recessed);
   outline: none;
 }
 
@@ -734,8 +741,8 @@ a {
   padding: 8px 12px;
   font-size: 12px;
   box-shadow:
-    inset 4px 4px 8px var(--shadow-dark),
-    inset -4px -4px 8px var(--shadow-light);
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed);
   outline: none;
 }
 
@@ -747,8 +754,8 @@ a {
   padding: 8px 12px;
   font-size: 12px;
   box-shadow:
-    inset 4px 4px 8px var(--shadow-dark),
-    inset -4px -4px 8px var(--shadow-light);
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed);
   outline: none;
   cursor: pointer;
 }
@@ -763,8 +770,8 @@ a {
   margin-bottom: 12px;
   font-size: 12px;
   box-shadow:
-    inset 3px 3px 6px var(--shadow-dark),
-    inset -3px -3px 6px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark-recessed),
+          inset -2px -2px 5px var(--shadow-light-recessed);
 }
 
 .file-browser__bulkbar select,
@@ -777,8 +784,8 @@ a {
   font-size: 12px;
   cursor: pointer;
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 .file-browser__toast {
@@ -789,8 +796,8 @@ a {
   font-size: 12px;
   margin-bottom: 12px;
   box-shadow:
-    3px 3px 8px var(--shadow-dark),
-    -3px -3px 8px var(--shadow-light);
+          3px 3px 8px var(--shadow-dark),
+          -3px -3px 8px var(--shadow-light);
 }
 
 .dropzone {
@@ -804,16 +811,16 @@ a {
   margin-bottom: 18px;
   background: var(--bg);
   box-shadow:
-    inset 5px 5px 10px var(--shadow-dark),
-    inset -5px -5px 10px var(--shadow-light);
+          inset 3px 3px 8px var(--shadow-dark-recessed),
+          inset -3px -3px 8px var(--shadow-light-recessed);
 }
 
 .dropzone--active {
   color: var(--accent-2);
   box-shadow:
-    inset 5px 5px 10px var(--shadow-dark),
-    inset -5px -5px 10px var(--shadow-light),
-    0 0 0 3px rgba(95, 122, 104, 0.3);
+          inset 3px 3px 8px var(--shadow-dark-recessed),
+          inset -3px -3px 8px var(--shadow-light-recessed),
+          0 0 0 3px rgba(95, 122, 104, 0.3);
 }
 
 .dropzone__folder {
@@ -873,8 +880,8 @@ a {
   padding: 4px 7px;
   width: 100%;
   box-shadow:
-    inset 3px 3px 6px var(--shadow-dark),
-    inset -3px -3px 6px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark-recessed),
+          inset -2px -2px 5px var(--shadow-light-recessed);
   outline: none;
 }
 
@@ -894,8 +901,8 @@ a {
   font-size: 11px;
   max-width: 120px;
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 4px var(--shadow-dark-recessed),
+          inset -2px -2px 4px var(--shadow-light-recessed);
   outline: none;
   cursor: pointer;
 }
@@ -915,8 +922,8 @@ a {
   font-size: 12px;
   cursor: pointer;
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 .file-browser__icon-btn:hover {
@@ -924,8 +931,8 @@ a {
 }
 .file-browser__icon-btn:active {
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark),
+          inset -2px -2px 5px var(--shadow-light);
 }
 
 .file-browser__download {
@@ -936,8 +943,8 @@ a {
   padding: 5px 7px;
   background: var(--bg);
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 .file-browser__download:hover {
@@ -953,14 +960,14 @@ a {
   font-size: 12px;
   cursor: pointer;
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 .file-browser__actions button:active {
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark),
+          inset -2px -2px 5px var(--shadow-light);
 }
 
 /* ---------------------------------------------------------------
