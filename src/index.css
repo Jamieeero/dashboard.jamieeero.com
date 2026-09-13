@@ -1065,6 +1065,36 @@ blockquote.notion-block {
 }
 
 /* ---------------------------------------------------------------
+   Notion Status Badges
+----------------------------------------------------------------*/
+.notion-status {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+  box-shadow:
+    inset 2px 2px 4px var(--shadow-dark),
+    inset -1px -1px 3px var(--shadow-light);
+}
+
+.notion-status--done {
+  background: rgba(95, 122, 104, 0.2);
+  color: var(--accent-2-deep);
+}
+
+.notion-status--in-progress {
+  background: rgba(74, 114, 158, 0.2);
+  color: #2b5278;
+}
+
+.notion-status--not-started {
+  background: rgba(161, 91, 79, 0.2);
+  color: var(--danger);
+}
+
+/* ---------------------------------------------------------------
    Calendar agenda list
 ----------------------------------------------------------------*/
 .agenda {

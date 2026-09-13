@@ -75,7 +75,7 @@ function Block({ block }: { block: NotionBlock }) {
       return <p className="notion-block"><RichTextRun items={text} /></p>
     default:
       return (
-        <div className="notion-block" style={{ color: 'red', fontSize: '12px' }}>
+        <div className="notion-block" style={{ color: 'var(--danger)', fontSize: '12px' }}>
           [Unsupported block: {block.type}]
         </div>
       )
@@ -123,22 +123,25 @@ function sortRows(rows: NotionRow[]): NotionRow[] {
   })
 }
 
-const STATUS_STYLE_MAP: Record<StatusType, { bg: string; color: string }> = {
-  'Done': { bg: '#dcfce7', color: '#166534' },         // Green
-  'In-Progress': { bg: '#dbeafe', color: '#1e40af' },  // Blue
-  'Not Started': { bg: '#fee2e2', color: '#991b1b' },  // Red
+function getStatusClassName(status: StatusType): string {
+  switch (status) {
+    case 'Done':
+      return 'notion-status notion-status--done'
+    case 'In-Progress':
+      return 'notion-status notion-status--in-progress'
+    case 'Not Started':
+      return 'notion-status notion-status--not-started'
+  }
 }
 
 function TaskRow({ row }: { row: NotionRow }) {
-  const statusStyle = STATUS_STYLE_MAP[row.status]
-
   return (
     <li className={`notion-task${row.status === 'Done' ? ' notion-task--done' : ''}`}>
-      <span className="notion-task__title" style={{ flexGrow: 1, fontWeight: 'bold' }}>
+      <span className="notion-task__title" style={{ flexGrow: 1, fontWeight: 600 }}>
         {row.title}
       </span>
 
-      <div className="notion-task__meta" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="notion-task__meta" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {row.date && (
           <span className="notion-task__date">
             {formatRelativeDate(row.date)}
@@ -151,18 +154,7 @@ function TaskRow({ row }: { row: NotionRow }) {
           </span>
         )}
 
-        <span
-          className="notion-task__status"
-          style={{
-            backgroundColor: statusStyle.bg,
-            color: statusStyle.color,
-            padding: '2px 10px',
-            borderRadius: '12px',
-            fontSize: '12px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-          }}
-        >
+        <span className={getStatusClassName(row.status)}>
           {row.status}
         </span>
       </div>
