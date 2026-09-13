@@ -74,12 +74,29 @@ export default function CalendarPanel() {
   }, [])
 
   useEffect(() => {
-    if (!loading && scrollRef.current) {
-      // Center on "now" only when viewing today; otherwise start near the top.
-      const scrollTarget = isToday ? Math.max(0, (nowMinutes * PIXELS_PER_MINUTE) - (120 * PIXELS_PER_MINUTE)) : 0
-      scrollRef.current.scrollTop = scrollTarget
+    // Today: keep the "now" line vertically centered in the visible frame,
+    // and re-center as the clock ticks forward.
+    if (!loading && isToday && scrollRef.current) {
+      const frameHeight = scrollRef.current.clientHeight
+      scrollRef.current.scrollTop = Math.max(0, (nowMinutes * PIXELS_PER_MINUTE) - frameHeight / 2)
     }
-  }, [loading, nowMinutes, isToday, selectedDate])
+  }, [loading, isToday, nowMinutes])
+
+  useEffect(() => {
+    // Any other day: jump to just above the first scheduled event once it loads.
+    if (!loading && !isToday && scrollRef.current) {
+      const dayTimeEvents = events.filter((e) => !e.allDay)
+      if (dayTimeEvents.length > 0) {
+        const firstStart = dayTimeEvents.reduce((min, e) => {
+          const start = new Date(e.start)
+          return Math.min(min, start.getHours() * 60 + start.getMinutes())
+        }, Infinity)
+        scrollRef.current.scrollTop = Math.max(0, firstStart * PIXELS_PER_MINUTE - 20)
+      } else {
+        scrollRef.current.scrollTop = 0
+      }
+    }
+  }, [loading, isToday, selectedDate, events])
 
   const allDayEvents = events.filter((e) => e.allDay)
   const timeEvents = events.filter((e) => !e.allDay)
