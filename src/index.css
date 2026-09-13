@@ -56,6 +56,25 @@ input {
   font-family: inherit;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--shadow-dark) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--shadow-dark);
+  border-radius: 10px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-dim);
+}
+
 h1, h2, h3, h4, h5 {
   font-family: var(--font-heading);
   font-weight: 700;
@@ -294,6 +313,8 @@ a {
   gap: 10px;
   overflow-y: auto;
   flex: 1;
+  padding: 6px 8px 6px 6px;
+  margin: -6px -8px -6px -6px;
 }
 
 .quicklinks__item {
