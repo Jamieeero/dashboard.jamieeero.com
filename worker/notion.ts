@@ -2,7 +2,6 @@ export interface NotionEnv {
   NOTION_TOKEN: string
 }
 
-// The page (or database) to display — not secret, safe to hardcode.
 export const NOTION_PAGE_ID = '3d648c06153680d5ae02d809dd4cd9a8'
 
 const NOTION_HEADERS = (token: string) => ({
@@ -15,12 +14,14 @@ interface RichTextItem {
   plain_text: string
 }
 
-interface NotionRow {
+export type StatusType = 'Done' | 'In-Progress' | 'Not Started'
+
+export interface NotionRow {
   id: string
   title: string
   date: string | null
   tag: { name: string; color: string } | null
-  checked: boolean | null
+  status: StatusType
 }
 
 interface NotionProperty {
@@ -32,8 +33,6 @@ interface NotionPageObject {
   id: string
   properties: Record<string, NotionProperty>
 }
-
-
 
 function simplifyRow(page: NotionPageObject): NotionRow {
   let title = '(untitled)'
@@ -61,14 +60,22 @@ function simplifyRow(page: NotionPageObject): NotionRow {
     }
   }
 
-  // Prefer the 'select' tag (e.g., GameStoryTelling) over the 'status' tag (e.g., Not Started)
-  const tag = selectTag || statusTag
+  // Determine standard status option
+  let status: StatusType = 'Not Started'
+  const rawStatus = statusTag?.name ?? ''
 
-  return { id: page.id, title, date, tag, checked }
+  if (checked === true || rawStatus.toLowerCase() === 'done') {
+    status = 'Done'
+  } else if (rawStatus.toLowerCase().includes('progress')) {
+    status = 'In-Progress'
+  } else {
+    status = 'Not Started'
+  }
+
+  return { id: page.id, title, date, tag: selectTag, status }
 }
 
 export async function getNotionContent(env: NotionEnv): Promise<Response> {
-  // 1. Try it as a database first
   const dbRes = await fetch(`https://api.notion.com/v1/databases/${NOTION_PAGE_ID}/query`, {
     method: 'POST',
     headers: NOTION_HEADERS(env.NOTION_TOKEN),
@@ -92,7 +99,6 @@ export async function getNotionContent(env: NotionEnv): Promise<Response> {
     })
   }
 
-  // 2. Not a direct database — render it as a page's blocks instead.
   const blocksRes = await fetch(
     `https://api.notion.com/v1/blocks/${NOTION_PAGE_ID}/children?page_size=100`,
     { headers: NOTION_HEADERS(env.NOTION_TOKEN) }
@@ -104,12 +110,9 @@ export async function getNotionContent(env: NotionEnv): Promise<Response> {
   }
 
   const data = await blocksRes.json<{ results: NotionBlock[] }>()
-
-  // 3. NEW LOGIC: Look for an inline database inside this page
   const dbBlock = data.results.find((b) => b.type === 'child_database')
 
   if (dbBlock) {
-    // We found the inline database! Use its specific ID to fetch the rows.
     const inlineDbRes = await fetch(`https://api.notion.com/v1/databases/${dbBlock.id}/query`, {
       method: 'POST',
       headers: NOTION_HEADERS(env.NOTION_TOKEN),
@@ -128,6 +131,218 @@ export async function getNotionContent(env: NotionEnv): Promise<Response> {
     }
   }
 
-  // 4. If no database was found at all, return the standard text blocks
   return Response.json({ kind: 'blocks', blocks: data.results })
+}
+
+import { useEffect, useRef, useState } from 'react'
+import FullscreenButton from './FullscreenButton'
+
+const NOTION_PAGE_URL = 'https://app.notion.com/p/Homework-3d648c06153680d5ae02d809dd4cd9a8'
+
+interface RichText {
+  plain_text: string
+  annotations?: { bold?: boolean; italic?: boolean; strikethrough?: boolean; code?: boolean }
+  href?: string | null
+}
+
+interface NotionBlock {
+  id: string
+  type: string
+  [key: string]: unknown
+}
+
+type NotionResponse =
+  | { kind: 'blocks'; blocks: NotionBlock[] }
+  | { kind: 'database'; title: string; rows: NotionRow[] }
+
+function RichTextRun({ items }: { items: RichText[] }) {
+  return (
+    <>
+      {items.map((t, i) => {
+        let node: React.ReactNode = t.plain_text
+        if (t.annotations?.code) node = <code key={i}>{node}</code>
+        if (t.annotations?.bold) node = <strong key={i}>{node}</strong>
+        if (t.annotations?.italic) node = <em key={i}>{node}</em>
+        if (t.annotations?.strikethrough) node = <s key={i}>{node}</s>
+        if (t.href) node = <a key={i} href={t.href} target="_blank" rel="noreferrer">{node}</a>
+        return <span key={i}>{node}</span>
+      })}
+    </>
+  )
+}
+
+function Block({ block }: { block: NotionBlock }) {
+  const data = block[block.type] as { rich_text?: RichText[]; checked?: boolean } | undefined
+  const text = data?.rich_text ?? []
+
+  switch (block.type) {
+    case 'heading_1':
+      return <h3 className="notion-block notion-h1"><RichTextRun items={text} /></h3>
+    case 'heading_2':
+      return <h4 className="notion-block notion-h2"><RichTextRun items={text} /></h4>
+    case 'heading_3':
+      return <h5 className="notion-block notion-h3"><RichTextRun items={text} /></h5>
+    case 'bulleted_list_item':
+    case 'numbered_list_item':
+      return <li className="notion-block"><RichTextRun items={text} /></li>
+    case 'to_do':
+      return (
+        <li className="notion-block notion-todo">
+          <input type="checkbox" checked={!!data?.checked} readOnly />
+          <RichTextRun items={text} />
+        </li>
+      )
+    case 'quote':
+      return <blockquote className="notion-block"><RichTextRun items={text} /></blockquote>
+    case 'divider':
+      return <hr className="notion-block" />
+    case 'paragraph':
+      if (text.length === 0) return <p className="notion-block notion-empty">&nbsp;</p>
+      return <p className="notion-block"><RichTextRun items={text} /></p>
+    default:
+      return (
+        <div className="notion-block" style={{ color: 'red', fontSize: '12px' }}>
+          [Unsupported block: {block.type}]
+        </div>
+      )
+  }
+}
+
+function formatRelativeDate(dateString: string): string {
+  const target = new Date(dateString + (dateString.length === 10 ? 'T00:00:00' : ''))
+  const today = new Date()
+
+  today.setHours(0, 0, 0, 0)
+  target.setHours(0, 0, 0, 0)
+
+  const diffTime = target.getTime() - today.getTime()
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24))
+
+  if (diffDays === 0) return 'Today'
+  if (diffDays === -1) return 'Yesterday'
+  if (diffDays === 1) return 'Tomorrow'
+
+  if (diffDays > 1 && diffDays < 7) {
+    return 'Next ' + target.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+  if (diffDays < -1 && diffDays > -7) {
+    return target.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+
+  return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function sortRows(rows: NotionRow[]): NotionRow[] {
+  const statusPriority: Record<StatusType, number> = {
+    'In-Progress': 1,
+    'Not Started': 2,
+    'Done': 3,
+  }
+
+  return [...rows].sort((a, b) => {
+    if (statusPriority[a.status] !== statusPriority[b.status]) {
+      return statusPriority[a.status] - statusPriority[b.status]
+    }
+    if (a.date && b.date) return a.date.localeCompare(b.date)
+    if (a.date !== b.date) return a.date ? -1 : 1
+    return a.title.localeCompare(b.title)
+  })
+}
+
+const STATUS_STYLE_MAP: Record<StatusType, { bg: string; color: string }> = {
+  'Done': { bg: '#dcfce7', color: '#166534' },         // Green
+  'In-Progress': { bg: '#dbeafe', color: '#1e40af' },  // Blue
+  'Not Started': { bg: '#fee2e2', color: '#991b1b' },  // Red
+}
+
+function TaskRow({ row }: { row: NotionRow }) {
+  const statusStyle = STATUS_STYLE_MAP[row.status]
+
+  return (
+    <li className={`notion-task${row.status === 'Done' ? ' notion-task--done' : ''}`}>
+      <span className="notion-task__title" style={{ flexGrow: 1, fontWeight: 'bold' }}>
+        {row.title}
+      </span>
+
+      <div className="notion-task__meta" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {row.date && (
+          <span className="notion-task__date">
+            {formatRelativeDate(row.date)}
+          </span>
+        )}
+
+        {row.tag && (
+          <span className={`notion-tag notion-tag--${row.tag.color}`}>
+            {row.tag.name}
+          </span>
+        )}
+
+        {/* Status badge on the far right */}
+        <span
+          className="notion-task__status"
+          style={{
+            backgroundColor: statusStyle.bg,
+            color: statusStyle.color,
+            padding: '2px 10px',
+            borderRadius: '12px',
+            fontSize: '12px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.status}
+        </span>
+      </div>
+    </li>
+  )
+}
+
+export default function NotionPanel() {
+  const [data, setData] = useState<NotionResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const panelRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    fetch('/api/notion')
+      .then(async (res) => {
+        if (!res.ok) throw new Error(await res.text())
+        return res.json()
+      })
+      .then(setData)
+      .catch((e) => setError(String(e)))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const isEmpty =
+    !!data && ((data.kind === 'blocks' && data.blocks.length === 0) ||
+      (data.kind === 'database' && data.rows.length === 0))
+
+  return (
+    <section className="panel panel--notion" ref={panelRef}>
+      <header className="panel__header">
+        <h2>Notes</h2>
+        <div className="panel__header-actions">
+          <a className="open-in-btn" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
+            open in notion ↗
+          </a>
+          <FullscreenButton targetRef={panelRef} />
+        </div>
+      </header>
+      <div className="panel__body panel__body--padded notion-content">
+        {loading && <p className="notion-empty">Loading…</p>}
+        {error && <p className="notion-empty">Couldn't load the page: {error}</p>}
+        {!loading && !error && isEmpty && <p className="notion-empty">Nothing here yet.</p>}
+        {!loading && !error && data?.kind === 'blocks' &&
+          data.blocks.map((b) => <Block key={b.id} block={b} />)}
+        {!loading && !error && data?.kind === 'database' && (
+          <ul className="notion-tasklist">
+            {sortRows(data.rows).map((row) => (
+              <TaskRow key={row.id} row={row} />
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )
 }
