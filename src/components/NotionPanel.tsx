@@ -186,7 +186,7 @@ export default function NotionPanel() {
   return (
     <section className="panel panel--notion" ref={panelRef}>
       <header className="panel__header">
-        <h2>Notes</h2>
+        <h2>Homework</h2>
         <div className="panel__header-actions">
           <a className="open-in-btn" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
             open in notion ↗
