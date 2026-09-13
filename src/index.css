@@ -19,7 +19,7 @@
   --danger: #a15b4f;
 
   /* MODIFIED: Less harsh white, closer to the --bg color */
-  --shadow-light: #f0ebe0;
+  --shadow-light: #f7f4ee;
   --shadow-dark: #b7ae9c;
 
   /* NEW: Lighting tokens for recessed areas and subtle edges */
