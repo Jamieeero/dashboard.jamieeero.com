@@ -26,6 +26,8 @@
   --shadow-light-recessed: rgba(240, 235, 224, 0.45);
   --shadow-dark-recessed: rgba(183, 174, 156, 0.45);
   --edge-subtle: rgba(255, 255, 255, 0.25);
+  --edge-inset: rgba(183, 174, 156, 0.38);
+  --edge-highlight: rgba(247, 244, 238, 0.28);
 
   --font-body: 'Inter', system-ui, sans-serif;
   --font-heading: 'Quicksand', sans-serif;
@@ -162,12 +164,15 @@ a {
 ----------------------------------------------------------------*/
 .panel {
   background: var(--panel);
-  border: 1px solid var(--edge-subtle); /* Added subtle edge */
+  border: none;
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+
   box-shadow:
+          inset 1px 1px 2px var(--edge-inset),
+          inset -1px -1px 2px var(--edge-highlight),
           10px 10px 22px var(--shadow-dark),
           -10px -10px 22px var(--shadow-light);
 }
