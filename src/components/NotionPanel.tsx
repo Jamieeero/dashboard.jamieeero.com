@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import FullscreenButton from './FullscreenButton'
 
-// Public share link, used only for the "Open in Notion" button.
 const NOTION_PAGE_URL = 'https://app.notion.com/p/Homework-3d648c06153680d5ae02d809dd4cd9a8'
+
+export type StatusType = 'Done' | 'In-Progress' | 'Not Started'
 
 interface RichText {
   plain_text: string
@@ -16,12 +17,12 @@ interface NotionBlock {
   [key: string]: unknown
 }
 
-interface NotionRow {
+export interface NotionRow {
   id: string
   title: string
   date: string | null
   tag: { name: string; color: string } | null
-  checked: boolean | null
+  status: StatusType
 }
 
 type NotionResponse =
@@ -56,7 +57,6 @@ function Block({ block }: { block: NotionBlock }) {
     case 'heading_3':
       return <h5 className="notion-block notion-h3"><RichTextRun items={text} /></h5>
     case 'bulleted_list_item':
-      return <li className="notion-block"><RichTextRun items={text} /></li>
     case 'numbered_list_item':
       return <li className="notion-block"><RichTextRun items={text} /></li>
     case 'to_do':
@@ -74,7 +74,6 @@ function Block({ block }: { block: NotionBlock }) {
       if (text.length === 0) return <p className="notion-block notion-empty">&nbsp;</p>
       return <p className="notion-block"><RichTextRun items={text} /></p>
     default:
-      // Temporarily render the unsupported block type to the screen
       return (
         <div className="notion-block" style={{ color: 'red', fontSize: '12px' }}>
           [Unsupported block: {block.type}]
@@ -87,7 +86,6 @@ function formatRelativeDate(dateString: string): string {
   const target = new Date(dateString + (dateString.length === 10 ? 'T00:00:00' : ''))
   const today = new Date()
 
-  // Normalize both dates to midnight for accurate day-math
   today.setHours(0, 0, 0, 0)
   target.setHours(0, 0, 0, 0)
 
@@ -98,38 +96,48 @@ function formatRelativeDate(dateString: string): string {
   if (diffDays === -1) return 'Yesterday'
   if (diffDays === 1) return 'Tomorrow'
 
-  // Within the next week
   if (diffDays > 1 && diffDays < 7) {
     return 'Next ' + target.toLocaleDateString('en-US', { weekday: 'long' })
   }
-  // Within the past week
   if (diffDays < -1 && diffDays > -7) {
     return target.toLocaleDateString('en-US', { weekday: 'long' })
   }
 
-  // Fallback for older/future dates
   return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function sortRows(rows: NotionRow[]): NotionRow[] {
+  const statusPriority: Record<StatusType, number> = {
+    'In-Progress': 1,
+    'Not Started': 2,
+    'Done': 3,
+  }
+
   return [...rows].sort((a, b) => {
-    // Unchecked tasks first, then by date (undated last), then title.
-    if (!!a.checked !== !!b.checked) return a.checked ? 1 : -1
+    if (statusPriority[a.status] !== statusPriority[b.status]) {
+      return statusPriority[a.status] - statusPriority[b.status]
+    }
     if (a.date && b.date) return a.date.localeCompare(b.date)
     if (a.date !== b.date) return a.date ? -1 : 1
     return a.title.localeCompare(b.title)
   })
 }
 
+const STATUS_STYLE_MAP: Record<StatusType, { bg: string; color: string }> = {
+  'Done': { bg: '#dcfce7', color: '#166534' },         // Green
+  'In-Progress': { bg: '#dbeafe', color: '#1e40af' },  // Blue
+  'Not Started': { bg: '#fee2e2', color: '#991b1b' },  // Red
+}
+
 function TaskRow({ row }: { row: NotionRow }) {
+  const statusStyle = STATUS_STYLE_MAP[row.status]
+
   return (
-    <li className={`notion-task${row.checked ? ' notion-task--done' : ''}`}>
-      {/* Title on the far left */}
+    <li className={`notion-task${row.status === 'Done' ? ' notion-task--done' : ''}`}>
       <span className="notion-task__title" style={{ flexGrow: 1, fontWeight: 'bold' }}>
         {row.title}
       </span>
 
-      {/* Container for the right-side elements */}
       <div className="notion-task__meta" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         {row.date && (
           <span className="notion-task__date">
@@ -143,8 +151,20 @@ function TaskRow({ row }: { row: NotionRow }) {
           </span>
         )}
 
-        {/* Checkbox on the far right */}
-        <input type="checkbox" checked={!!row.checked} readOnly />
+        <span
+          className="notion-task__status"
+          style={{
+            backgroundColor: statusStyle.bg,
+            color: statusStyle.color,
+            padding: '2px 10px',
+            borderRadius: '12px',
+            fontSize: '12px',
+            fontWeight: 600,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {row.status}
+        </span>
       </div>
     </li>
   )
