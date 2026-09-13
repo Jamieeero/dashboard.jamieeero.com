@@ -171,8 +171,8 @@ a {
   flex-direction: column;
 
   box-shadow:
-          inset 1px 1px 2px var(--edge-inset),
-          inset -1px -1px 2px var(--edge-highlight),
+          inset 1px 1px 2px var(--edge-highlight),
+          inset -1px -1px 2px var(--edge-inset),
           10px 10px 22px var(--shadow-dark),
           -10px -10px 22px var(--shadow-light);
 }
