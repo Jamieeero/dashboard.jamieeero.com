@@ -496,50 +496,122 @@ a {
 @media (max-width: 600px) {
   .file-browser {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 
+  /* 1. Transform the folder tree into a horizontal scrollable tab list */
+  .folder-tree {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 4px;
+    padding-bottom: 12px;
+    gap: 12px;
+    scrollbar-width: none; /* Hide scrollbar for a cleaner look */
+  }
+
+  .folder-tree::-webkit-scrollbar {
+    display: none;
+  }
+
+  .folder-tree__row {
+    flex: 0 0 auto;
+    background: var(--bg);
+    padding-right: 8px;
+    box-shadow:
+      3px 3px 6px var(--shadow-dark),
+      -3px -3px 6px var(--shadow-light);
+  }
+
+  .folder-tree__row--active {
+    box-shadow:
+      inset 3px 3px 6px var(--shadow-dark),
+      inset -3px -3px 6px var(--shadow-light);
+  }
+
+  /* Ensure actions are visible on touch devices for the active folder */
+  .folder-tree__row--active .folder-tree__actions {
+    visibility: visible;
+  }
+
+  /* 2. Stack toolbar inputs cleanly */
   .file-browser__toolbar {
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .file-browser__toolbar select {
-    flex: 1 1 100%;
+  .file-browser__toolbar select,
+  .file-browser__search {
+    width: 100%;
   }
 
   .file-browser__bulkbar {
     flex-wrap: wrap;
+    justify-content: space-between;
   }
 
-  /* Column headers don't mean much once rows stop being a grid. */
+  /* 3. Transform file rows into neumorphic cards */
   .file-browser__row--head {
-    display: none;
+    display: none; /* Hide table headers for mobile card view */
   }
 
   .file-browser__row {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: 24px 1fr auto;
+    grid-template-rows: auto auto auto;
     align-items: center;
-    gap: 6px 10px;
-    padding: 12px 4px;
+    gap: 8px 12px;
+    padding: 16px;
+    background: var(--bg);
+    border-bottom: none;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    box-shadow:
+      5px 5px 12px var(--shadow-dark),
+      -5px -5px 12px var(--shadow-light);
+  }
+
+  /* Explicitly place grid items into the card layout */
+  .file-browser__row > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
   }
 
   .file-browser__name {
-    flex: 1 1 100%;
-    white-space: normal;
-    word-break: break-word;
+    grid-column: 2 / -1;
+    grid-row: 1;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-bottom: 4px;
   }
 
-  .file-browser__size,
+  .file-browser__size {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 12px;
+  }
+
   .file-browser__date {
-    font-size: 11px;
+    grid-column: 3;
+    grid-row: 2;
+    font-size: 12px;
+    text-align: right;
   }
 
   .file-browser__move {
-    max-width: 130px;
+    grid-column: 2;
+    grid-row: 3;
+    max-width: 100%;
+    margin-top: 4px;
   }
 
   .file-browser__actions {
-    margin-left: auto;
+    grid-column: 3;
+    grid-row: 3;
+    justify-content: flex-end;
+    margin-top: 4px;
   }
 }
 
