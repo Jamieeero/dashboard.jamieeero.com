@@ -313,8 +313,8 @@ a {
   gap: 10px;
   overflow-y: auto;
   flex: 1;
-  padding: 6px 8px 6px 6px;
-  margin: -6px -8px -6px -6px;
+  padding: 18px;
+  margin: -18px;
 }
 
 .quicklinks__item {
