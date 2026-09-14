@@ -48,7 +48,7 @@ export default function QuickLinksPanel() {
     <section className="panel panel--quicklinks">
       <header className="panel__header">
         <h2>Quick Links</h2>
-        <h3>662127086</h3>
+        <h1>662127086</h3>
         <div className="panel__header-actions">
           <button
             className="fullscreen-btn"

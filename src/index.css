@@ -129,6 +129,45 @@ a {
 }
 
 /* ---------------------------------------------------------------
+   Header tabs
+----------------------------------------------------------------*/
+.shell__nav {
+  display: flex;
+  gap: 6px;
+  background: var(--panel-raised);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  box-shadow:
+    inset 2px 2px 5px var(--shadow-dark-recessed),
+    inset -2px -2px 5px var(--shadow-light-recessed);
+}
+
+.shell__tab {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 7px 16px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.shell__tab:hover {
+  color: var(--text);
+}
+
+.shell__tab--active {
+  color: var(--text);
+  background: var(--panel);
+  box-shadow:
+    2px 2px 5px var(--shadow-dark),
+    -2px -2px 5px var(--shadow-light);
+}
+
+/* ---------------------------------------------------------------
    Grid — unchanged layout, asymmetric instrument-cluster.
 ----------------------------------------------------------------*/
 .grid {
@@ -139,6 +178,15 @@ a {
     'calendar quicklinks notion'
     'desmos   desmos     notion'
     'files    files      files';
+}
+
+.grid--single {
+  grid-template-columns: 1fr;
+  grid-template-areas: 'single';
+}
+
+.grid--single > * {
+  grid-area: single;
 }
 
 @media (max-width: 900px) {
@@ -484,6 +532,209 @@ a {
     inset -2px -2px 5px var(--shadow-light);
 }
 
+/* ---------------------------------------------------------------
+   Formulas panel
+----------------------------------------------------------------*/
+.formulas__body {
+  min-height: 480px;
+}
+
+.formulas__layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .formulas__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formulas__topics {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formulas__topic-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.formulas__topic-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  cursor: pointer;
+  box-shadow:
+    4px 4px 9px var(--shadow-dark),
+    -4px -4px 9px var(--shadow-light);
+}
+
+.formulas__topic-btn--active {
+  color: var(--accent-2-deep);
+  box-shadow:
+    inset 3px 3px 7px var(--shadow-dark-recessed),
+    inset -3px -3px 7px var(--shadow-light-recessed);
+}
+
+.formulas__topic-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.formulas__detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.formulas__detail-header h3 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.formulas__form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.formulas__form input {
+  background: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px 12px;
+  font-size: 13px;
+  box-shadow:
+    inset 4px 4px 8px var(--shadow-dark),
+    inset -4px -4px 8px var(--shadow-light);
+  outline: none;
+}
+.formulas__form input:focus {
+  box-shadow:
+    inset 4px 4px 8px var(--shadow-dark),
+    inset -4px -4px 8px var(--shadow-light),
+    0 0 0 3px rgba(122, 106, 83, 0.3);
+}
+
+.formulas__form-expression {
+  font-family: var(--font-mono);
+}
+
+.formulas__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.formulas__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow:
+    5px 5px 11px var(--shadow-dark),
+    -5px -5px 11px var(--shadow-light);
+}
+
+.formulas__item-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.formulas__item-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.formulas__item-expression {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--accent-2-deep);
+  overflow-wrap: break-word;
+}
+
+.formulas__item-notes {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* ---------------------------------------------------------------
+   Email panel
+----------------------------------------------------------------*/
+.email__body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.email__providers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.email__provider-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow:
+    5px 5px 11px var(--shadow-dark),
+    -5px -5px 11px var(--shadow-light);
+}
+
+.email__provider-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.email__provider-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.email__provider-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.email__note {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
 .panel--notion .panel__body {
   min-height: 460px;
 }
@@ -509,6 +760,20 @@ a {
   /* 1. Reclaim horizontal screen space by shrinking outer padding */
   .shell {
     padding: 16px 16px 40px;
+  }
+
+  .shell__header {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .shell__nav {
+    order: 3;
+    width: 100%;
+  }
+
+  .shell__tab {
+    flex: 1;
   }
 
   .file-browser {
