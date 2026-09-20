@@ -6,8 +6,10 @@ import FileBrowser from './components/FileBrowser/FileBrowser'
 import QuickLinksPanel from './components/QuickLinksPanel'
 import FormulasPanel from './components/FormulasPanel'
 import EmailPanel from './components/EmailPanel'
+import Physics1CribSheet from './components/Physics1CribSheet'
 
 type Tab = 'dashboard' | 'formulas' | 'email'
+type FormulasView = 'general' | 'physics1'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -18,6 +20,7 @@ const TABS: { id: Tab; label: string }[] = [
 export default function App() {
   const [now, setNow] = useState(new Date())
   const [tab, setTab] = useState<Tab>('dashboard')
+  const [formulasView, setFormulasView] = useState<FormulasView>('general')
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000 * 30)
@@ -65,9 +68,24 @@ export default function App() {
       )}
 
       {tab === 'formulas' && (
-        <main className="grid grid--single">
-          <FormulasPanel />
-        </main>
+        <>
+          <nav className="shell__nav shell__subnav" role="tablist" aria-label="Formula sets">
+            {(['general', 'physics1'] as const).map((v) => (
+              <button
+                key={v}
+                role="tab"
+                aria-selected={formulasView === v}
+                className={`shell__tab${formulasView === v ? ' shell__tab--active' : ''}`}
+                onClick={() => setFormulasView(v)}
+              >
+                {v === 'general' ? 'General' : 'Physics 1'}
+              </button>
+            ))}
+          </nav>
+          <main className="grid grid--single">
+            {formulasView === 'general' ? <FormulasPanel /> : <Physics1CribSheet />}
+          </main>
+        </>
       )}
 
       {tab === 'email' && (

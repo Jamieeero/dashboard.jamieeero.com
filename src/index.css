@@ -1551,3 +1551,130 @@ blockquote.notion-block {
     max-height: 560px;
   }
 }
+
+/* ---------------------------------------------------------------
+   Physics 1 crib sheet
+----------------------------------------------------------------*/
+.shell__subnav {
+  width: fit-content;
+  margin-bottom: 20px;
+}
+
+.cribsheet__controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cribsheet__count {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cribsheet__ctl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.cribsheet__ctl input {
+  width: 80px;
+  accent-color: var(--accent-2);
+}
+
+.cribsheet__sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.cribsheet__section-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cribsheet__item {
+  align-items: center;
+}
+.cribsheet__item input[type='checkbox'] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-2);
+  cursor: pointer;
+}
+.cribsheet__item--off {
+  opacity: 0.55;
+}
+
+/* The sheet itself: plain black-on-white so it prints cleanly. */
+.cribsheet__page {
+  max-width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  padding: 0.4in;
+  background: #fff;
+  color: #000;
+  line-height: 1.25;
+  column-gap: 0.2in;
+  column-rule: 1px solid #ccc;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+}
+.cribsheet__sec h4 {
+  margin: 0 0 0.3em;
+  padding-bottom: 0.1em;
+  border-bottom: 1px solid #000;
+  font: 700 1em var(--font-heading);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  break-after: avoid;
+}
+.cribsheet__sec {
+  margin-bottom: 0.9em;
+}
+.cribsheet__row {
+  margin-bottom: 0.3em;
+  break-inside: avoid;
+}
+.cribsheet__row-name {
+  font-weight: 600;
+}
+.cribsheet__row code {
+  font-family: var(--font-mono);
+}
+.cribsheet__row-note {
+  color: #444;
+  font-style: italic;
+}
+
+@page {
+  margin: 0.4in;
+}
+@media print {
+  body {
+    background: #fff;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .cribsheet__page,
+  .cribsheet__page * {
+    visibility: visible;
+  }
+  .cribsheet__page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+}
