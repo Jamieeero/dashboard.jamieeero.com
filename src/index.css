@@ -383,6 +383,7 @@ a {
 }
 
 .panel:fullscreen {
+  max-height: none;
   border-radius: 0;
   padding: 12px;
   background: var(--bg);
@@ -1095,8 +1096,12 @@ a {
 /* ---------------------------------------------------------------
    Notion panel content
 ----------------------------------------------------------------*/
-.panel--notion .panel__body {
-  min-height: 460px;
+/* The panel spans two grid rows. contain: size stops its content from
+   growing those rows, so the panel fills the rows and .notion-content
+   scrolls when the list (including an expanded Done section) is longer. */
+.panel--notion {
+  contain: size;
+  min-height: 520px;
 }
 
 .notion-content {
@@ -1535,5 +1540,14 @@ blockquote.notion-block {
     grid-row: 3;
     justify-content: flex-end;
     margin-top: 4px;
+  }
+}
+
+/* Single-column layout: no spanned rows to fill, so cap the height instead
+   and let the body scroll past it. */
+@media (max-width: 900px) {
+  .panel--notion {
+    contain: none;
+    max-height: 560px;
   }
 }

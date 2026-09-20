@@ -97,7 +97,11 @@ function formatRelativeDate(dateString: string): string {
   if (diffDays === 1) return 'Tomorrow'
 
   if (diffDays > 1 && diffDays < 7) {
-    return 'Next ' + target.toLocaleDateString('en-US', { weekday: 'long' })
+    const weekday = target.toLocaleDateString('en-US', { weekday: 'long' })
+    // Weeks run Sunday–Saturday: only say "Next" once the date lands in the following week
+    const nextWeekStart = new Date(today)
+    nextWeekStart.setDate(today.getDate() + (7 - today.getDay()))
+    return target < nextWeekStart ? weekday : 'Next ' + weekday
   }
   if (diffDays < -1 && diffDays > -7) {
     return 'Last ' + target.toLocaleDateString('en-US', { weekday: 'long' })
