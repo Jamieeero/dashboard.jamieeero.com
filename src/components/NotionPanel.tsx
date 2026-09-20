@@ -26,22 +26,22 @@ export interface NotionRow {
 }
 
 type NotionResponse =
-  | { kind: 'blocks'; blocks: NotionBlock[] }
-  | { kind: 'database'; title: string; rows: NotionRow[] }
+    | { kind: 'blocks'; blocks: NotionBlock[] }
+    | { kind: 'database'; title: string; rows: NotionRow[] }
 
 function RichTextRun({ items }: { items: RichText[] }) {
   return (
-    <>
-      {items.map((t, i) => {
-        let node: React.ReactNode = t.plain_text
-        if (t.annotations?.code) node = <code key={i}>{node}</code>
-        if (t.annotations?.bold) node = <strong key={i}>{node}</strong>
-        if (t.annotations?.italic) node = <em key={i}>{node}</em>
-        if (t.annotations?.strikethrough) node = <s key={i}>{node}</s>
-        if (t.href) node = <a key={i} href={t.href} target="_blank" rel="noreferrer">{node}</a>
-        return <span key={i}>{node}</span>
-      })}
-    </>
+      <>
+        {items.map((t, i) => {
+          let node: React.ReactNode = t.plain_text
+          if (t.annotations?.code) node = <code key={i}>{node}</code>
+          if (t.annotations?.bold) node = <strong key={i}>{node}</strong>
+          if (t.annotations?.italic) node = <em key={i}>{node}</em>
+          if (t.annotations?.strikethrough) node = <s key={i}>{node}</s>
+          if (t.href) node = <a key={i} href={t.href} target="_blank" rel="noreferrer">{node}</a>
+          return <span key={i}>{node}</span>
+        })}
+      </>
   )
 }
 
@@ -61,10 +61,10 @@ function Block({ block }: { block: NotionBlock }) {
       return <li className="notion-block"><RichTextRun items={text} /></li>
     case 'to_do':
       return (
-        <li className="notion-block notion-todo">
-          <input type="checkbox" checked={!!data?.checked} readOnly />
-          <RichTextRun items={text} />
-        </li>
+          <li className="notion-block notion-todo">
+            <input type="checkbox" checked={!!data?.checked} readOnly />
+            <RichTextRun items={text} />
+          </li>
       )
     case 'quote':
       return <blockquote className="notion-block"><RichTextRun items={text} /></blockquote>
@@ -75,9 +75,9 @@ function Block({ block }: { block: NotionBlock }) {
       return <p className="notion-block"><RichTextRun items={text} /></p>
     default:
       return (
-        <div className="notion-block" style={{ color: 'var(--danger)', fontSize: '12px' }}>
-          [Unsupported block: {block.type}]
-        </div>
+          <div className="notion-block notion-unsupported">
+            [Unsupported block: {block.type}]
+          </div>
       )
   }
 }
@@ -100,10 +100,22 @@ function formatRelativeDate(dateString: string): string {
     return 'Next ' + target.toLocaleDateString('en-US', { weekday: 'long' })
   }
   if (diffDays < -1 && diffDays > -7) {
-    return target.toLocaleDateString('en-US', { weekday: 'long' })
+    return 'Last ' + target.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+  if (diffDays <= -7) {
+    return target.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' })
   }
 
   return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function isOverdue(row: NotionRow): boolean {
+  if (row.status === 'Done' || !row.date) return false
+  const target = new Date(row.date + (row.date.length === 10 ? 'T00:00:00' : ''))
+  const today = new Date()
+  target.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  return target < today
 }
 
 function sortRows(rows: NotionRow[]): NotionRow[] {
@@ -135,30 +147,31 @@ function getStatusClassName(status: StatusType): string {
 }
 
 function TaskRow({ row }: { row: NotionRow }) {
+  const overdue = isOverdue(row)
   return (
-    <li className={`notion-task${row.status === 'Done' ? ' notion-task--done' : ''}`}>
-      <span className="notion-task__title" style={{ flexGrow: 1, fontWeight: 600 }}>
+      <li className={`notion-task${row.status === 'Done' ? ' notion-task--done' : ''}${overdue ? ' notion-task--overdue' : ''}`}>
+      <span className="notion-task__title">
         {row.title}
       </span>
 
-      <div className="notion-task__meta" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        {row.date && (
-          <span className="notion-task__date">
+        <div className="notion-task__meta">
+          {row.date && (
+              <span className="notion-task__date">
             {formatRelativeDate(row.date)}
           </span>
-        )}
+          )}
 
-        {row.tag && (
-          <span className={`notion-tag notion-tag--${row.tag.color}`}>
+          {row.tag && (
+              <span className={`notion-tag notion-tag--${row.tag.color}`}>
             {row.tag.name}
           </span>
-        )}
+          )}
 
-        <span className={getStatusClassName(row.status)}>
+          <span className={getStatusClassName(row.status)}>
           {row.status}
         </span>
-      </div>
-    </li>
+        </div>
+      </li>
   )
 }
 
@@ -170,44 +183,60 @@ export default function NotionPanel() {
 
   useEffect(() => {
     fetch('/api/notion')
-      .then(async (res) => {
-        if (!res.ok) throw new Error(await res.text())
-        return res.json()
-      })
-      .then(setData)
-      .catch((e) => setError(String(e)))
-      .finally(() => setLoading(false))
+        .then(async (res) => {
+          if (!res.ok) throw new Error(await res.text())
+          return res.json()
+        })
+        .then(setData)
+        .catch((e) => setError(String(e)))
+        .finally(() => setLoading(false))
   }, [])
 
   const isEmpty =
-    !!data && ((data.kind === 'blocks' && data.blocks.length === 0) ||
-      (data.kind === 'database' && data.rows.length === 0))
+      !!data && ((data.kind === 'blocks' && data.blocks.length === 0) ||
+          (data.kind === 'database' && data.rows.length === 0))
+
+  const sorted = data?.kind === 'database' ? sortRows(data.rows) : []
+  const activeRows = sorted.filter((r) => r.status !== 'Done')
+  const doneRows = sorted.filter((r) => r.status === 'Done')
 
   return (
-    <section className="panel panel--notion" ref={panelRef}>
-      <header className="panel__header">
-        <h2>Homework</h2>
-        <div className="panel__header-actions">
-          <a className="open-in-btn" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
-            open in notion ↗
-          </a>
-          <FullscreenButton targetRef={panelRef} />
+      <section className="panel panel--notion" ref={panelRef}>
+        <header className="panel__header">
+          <h2>Homework</h2>
+          <div className="panel__header-actions">
+            <a className="open-in-btn" href={NOTION_PAGE_URL} target="_blank" rel="noreferrer">
+              open in notion ↗
+            </a>
+            <FullscreenButton targetRef={panelRef} />
+          </div>
+        </header>
+        <div className="panel__body panel__body--padded notion-content">
+          {loading && <p className="notion-empty">Loading…</p>}
+          {error && <p className="notion-empty">Couldn't load the page: {error}</p>}
+          {!loading && !error && isEmpty && <p className="notion-empty">Nothing here yet.</p>}
+          {!loading && !error && data?.kind === 'blocks' &&
+              data.blocks.map((b) => <Block key={b.id} block={b} />)}
+          {!loading && !error && data?.kind === 'database' && (
+              <>
+                <ul className="notion-tasklist">
+                  {activeRows.map((row) => (
+                      <TaskRow key={row.id} row={row} />
+                  ))}
+                </ul>
+                {doneRows.length > 0 && (
+                    <details className="notion-done">
+                      <summary>Done ({doneRows.length})</summary>
+                      <ul className="notion-tasklist">
+                        {doneRows.map((row) => (
+                            <TaskRow key={row.id} row={row} />
+                        ))}
+                      </ul>
+                    </details>
+                )}
+              </>
+          )}
         </div>
-      </header>
-      <div className="panel__body panel__body--padded notion-content">
-        {loading && <p className="notion-empty">Loading…</p>}
-        {error && <p className="notion-empty">Couldn't load the page: {error}</p>}
-        {!loading && !error && isEmpty && <p className="notion-empty">Nothing here yet.</p>}
-        {!loading && !error && data?.kind === 'blocks' &&
-          data.blocks.map((b) => <Block key={b.id} block={b} />)}
-        {!loading && !error && data?.kind === 'database' && (
-          <ul className="notion-tasklist">
-            {sortRows(data.rows).map((row) => (
-              <TaskRow key={row.id} row={row} />
-            ))}
-          </ul>
-        )}
-      </div>
-    </section>
+      </section>
   )
 }

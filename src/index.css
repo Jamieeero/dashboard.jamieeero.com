@@ -138,8 +138,8 @@ a {
   padding: 4px;
   border-radius: var(--radius-sm);
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark-recessed),
-    inset -2px -2px 5px var(--shadow-light-recessed);
+          inset 2px 2px 5px var(--shadow-dark-recessed),
+          inset -2px -2px 5px var(--shadow-light-recessed);
 }
 
 .shell__tab {
@@ -163,8 +163,8 @@ a {
   color: var(--text);
   background: var(--panel);
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 /* ---------------------------------------------------------------
@@ -269,8 +269,8 @@ a {
   padding: 6px 12px;
   border-radius: var(--radius-xs);
   box-shadow:
-    3px 3px 7px var(--shadow-dark),
-    -3px -3px 7px var(--shadow-light);
+          3px 3px 7px var(--shadow-dark),
+          -3px -3px 7px var(--shadow-light);
   transition: color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -280,8 +280,8 @@ a {
 
 .open-in-btn:active {
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark),
+          inset -2px -2px 5px var(--shadow-light);
 }
 
 .calendar-nav {
@@ -307,8 +307,8 @@ a {
   font-size: 14px;
   cursor: pointer;
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 .calendar-nav__btn:hover {
@@ -317,8 +317,8 @@ a {
 
 .calendar-nav__btn:active {
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark),
+          inset -2px -2px 5px var(--shadow-light);
 }
 
 .calendar-nav__date {
@@ -349,8 +349,8 @@ a {
   font-size: 11px;
   cursor: pointer;
   box-shadow:
-    2px 2px 5px var(--shadow-dark),
-    -2px -2px 5px var(--shadow-light);
+          2px 2px 5px var(--shadow-dark),
+          -2px -2px 5px var(--shadow-light);
 }
 
 .calendar-nav__today:hover {
@@ -369,17 +369,17 @@ a {
   justify-content: center;
   cursor: pointer;
   box-shadow:
-    3px 3px 7px var(--shadow-dark),
-    -3px -3px 7px var(--shadow-light);
+          3px 3px 7px var(--shadow-dark),
+          -3px -3px 7px var(--shadow-light);
 }
 
 .fullscreen-btn:hover {
-  color: var(--accent);
+  color: var(--accent-2-deep);
 }
 .fullscreen-btn:active {
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark),
+          inset -2px -2px 5px var(--shadow-light);
 }
 
 .panel:fullscreen {
@@ -401,6 +401,14 @@ a {
 
 .panel__body--padded {
   padding: 18px 20px;
+}
+
+.panel iframe {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border: 0;
+  display: block;
 }
 
 .panel--calendar .panel__body,
@@ -435,15 +443,15 @@ a {
   padding: 10px 12px;
   font-size: 13px;
   box-shadow:
-    inset 4px 4px 8px var(--shadow-dark),
-    inset -4px -4px 8px var(--shadow-light);
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed);
   outline: none;
 }
 .quicklinks__form input:focus {
   box-shadow:
-    inset 4px 4px 8px var(--shadow-dark),
-    inset -4px -4px 8px var(--shadow-light),
-    0 0 0 3px rgba(122, 106, 83, 0.3);
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed),
+          0 0 0 3px rgba(122, 106, 83, 0.3);
 }
 
 .quicklinks__add-submit {
@@ -458,14 +466,14 @@ a {
   cursor: pointer;
   align-self: flex-start;
   box-shadow:
-    4px 4px 9px var(--shadow-dark),
-    -4px -4px 9px var(--shadow-light),
-    inset 0 1px 1px rgba(255, 255, 255, 0.35);
+          4px 4px 9px var(--shadow-dark),
+          -4px -4px 9px var(--shadow-light),
+          inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 .quicklinks__add-submit:active {
   box-shadow:
-    inset 3px 3px 7px rgba(0, 0, 0, 0.2),
-    inset -3px -3px 7px rgba(255, 255, 255, 0.1);
+          inset 3px 3px 7px rgba(0, 0, 0, 0.2),
+          inset -3px -3px 7px rgba(255, 255, 255, 0.1);
 }
 
 .quicklinks__list {
@@ -495,8 +503,8 @@ a {
   font-size: 13px;
   font-weight: 500;
   box-shadow:
-    5px 5px 11px var(--shadow-dark),
-    -5px -5px 11px var(--shadow-light);
+          5px 5px 11px var(--shadow-dark),
+          -5px -5px 11px var(--shadow-light);
   transition: color 0.15s ease;
 }
 
@@ -519,8 +527,8 @@ a {
   font-size: 16px;
   line-height: 1;
   box-shadow:
-    3px 3px 7px var(--shadow-dark),
-    -3px -3px 7px var(--shadow-light);
+          3px 3px 7px var(--shadow-dark),
+          -3px -3px 7px var(--shadow-light);
 }
 
 .quicklinks__remove:hover {
@@ -528,8 +536,8 @@ a {
 }
 .quicklinks__remove:active {
   box-shadow:
-    inset 2px 2px 5px var(--shadow-dark),
-    inset -2px -2px 5px var(--shadow-light);
+          inset 2px 2px 5px var(--shadow-dark),
+          inset -2px -2px 5px var(--shadow-light);
 }
 
 /* ---------------------------------------------------------------
@@ -581,15 +589,15 @@ a {
   font-family: var(--font-heading);
   cursor: pointer;
   box-shadow:
-    4px 4px 9px var(--shadow-dark),
-    -4px -4px 9px var(--shadow-light);
+          4px 4px 9px var(--shadow-dark),
+          -4px -4px 9px var(--shadow-light);
 }
 
 .formulas__topic-btn--active {
   color: var(--accent-2-deep);
   box-shadow:
-    inset 3px 3px 7px var(--shadow-dark-recessed),
-    inset -3px -3px 7px var(--shadow-light-recessed);
+          inset 3px 3px 7px var(--shadow-dark-recessed),
+          inset -3px -3px 7px var(--shadow-light-recessed);
 }
 
 .formulas__topic-count {
@@ -626,15 +634,15 @@ a {
   padding: 10px 12px;
   font-size: 13px;
   box-shadow:
-    inset 4px 4px 8px var(--shadow-dark),
-    inset -4px -4px 8px var(--shadow-light);
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed);
   outline: none;
 }
 .formulas__form input:focus {
   box-shadow:
-    inset 4px 4px 8px var(--shadow-dark),
-    inset -4px -4px 8px var(--shadow-light),
-    0 0 0 3px rgba(122, 106, 83, 0.3);
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed),
+          0 0 0 3px rgba(122, 106, 83, 0.3);
 }
 
 .formulas__form-expression {
@@ -655,8 +663,8 @@ a {
   border-radius: var(--radius-sm);
   padding: 12px 14px;
   box-shadow:
-    5px 5px 11px var(--shadow-dark),
-    -5px -5px 11px var(--shadow-light);
+          5px 5px 11px var(--shadow-dark),
+          -5px -5px 11px var(--shadow-light);
 }
 
 .formulas__item-main {
@@ -707,8 +715,8 @@ a {
   border-radius: var(--radius-sm);
   padding: 12px 14px;
   box-shadow:
-    5px 5px 11px var(--shadow-dark),
-    -5px -5px 11px var(--shadow-light);
+          5px 5px 11px var(--shadow-dark),
+          -5px -5px 11px var(--shadow-light);
 }
 
 .email__provider-info {
@@ -735,18 +743,6 @@ a {
   margin: 0;
 }
 
-.panel--notion .panel__body {
-  min-height: 460px;
-}
-
-.panel iframe {
-  width: 100%;
-  height: 100%;
-  min-height: inherit;
-  border: 0;
-  display: block;
-}
-
 /* ---------------------------------------------------------------
    File browser
 ----------------------------------------------------------------*/
@@ -754,150 +750,6 @@ a {
   display: grid;
   grid-template-columns: 160px 1fr;
   gap: 20px;
-}
-
-@media (max-width: 600px) {
-  /* 1. Reclaim horizontal screen space by shrinking outer padding */
-  .shell {
-    padding: 16px 16px 40px;
-  }
-
-  .shell__header {
-    flex-wrap: wrap;
-    row-gap: 12px;
-  }
-
-  .shell__nav {
-    order: 3;
-    width: 100%;
-  }
-
-  .shell__tab {
-    flex: 1;
-  }
-
-  .file-browser {
-    /* 2. Prevent the main grid from blowing out */
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-  }
-
-  /* Folder tree as a horizontal scrollable tab list */
-  .folder-tree {
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 4px;
-    padding-bottom: 12px;
-    gap: 12px;
-    scrollbar-width: none;
-  }
-
-  .folder-tree::-webkit-scrollbar {
-    display: none;
-  }
-
-  .folder-tree__row {
-    flex: 0 0 auto;
-    background: var(--bg);
-    padding-right: 8px;
-    box-shadow:
-            3px 3px 6px var(--shadow-dark),
-            -3px -3px 6px var(--shadow-light);
-  }
-
-  .folder-tree__row--active {
-    box-shadow:
-            inset 2px 2px 5px var(--shadow-dark-recessed),
-            inset -2px -2px 5px var(--shadow-light-recessed);
-  }
-
-  .folder-tree__row--active .folder-tree__actions {
-    visibility: visible;
-  }
-
-  /* Stack toolbar inputs cleanly */
-  .file-browser__toolbar {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .file-browser__toolbar select,
-  .file-browser__search {
-    width: 100%;
-  }
-
-  .file-browser__bulkbar {
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-
-  /* Transform file rows into neumorphic cards */
-  .file-browser__row--head {
-    display: none;
-  }
-
-  .file-browser__row {
-    display: grid;
-    /* 3. The magic minmax(0, 1fr) fixes the grid overflow issue */
-    grid-template-columns: 24px minmax(0, 1fr) auto;
-    grid-template-rows: auto auto auto;
-    align-items: center;
-    gap: 8px 12px;
-    padding: 16px;
-    background: var(--bg);
-    border-bottom: none;
-    border-radius: var(--radius-sm);
-    margin-bottom: 16px;
-    box-shadow:
-            5px 5px 12px var(--shadow-dark),
-            -5px -5px 12px var(--shadow-light);
-  }
-
-  /* File Card Grid Placement */
-  .file-browser__row > :nth-child(1) {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .file-browser__name {
-    grid-column: 2 / 4; /* Spans across the remaining width */
-    grid-row: 1;
-    font-size: 14px;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-bottom: 4px;
-    min-width: 0; /* 4. Forces the ellipsis to trigger instead of breaking the grid */
-  }
-
-  .file-browser__size {
-    grid-column: 2;
-    grid-row: 2;
-    font-size: 12px;
-  }
-
-  .file-browser__date {
-    grid-column: 3;
-    grid-row: 2;
-    font-size: 12px;
-    text-align: right;
-  }
-
-  .file-browser__move {
-    grid-column: 2;
-    grid-row: 3;
-    width: 100%; /* Allows the select box to fill the column safely */
-    max-width: 130px;
-    margin-top: 4px;
-  }
-
-  .file-browser__actions {
-    grid-column: 3;
-    grid-row: 3;
-    justify-content: flex-end;
-    margin-top: 4px;
-  }
 }
 
 .folder-tree {
@@ -1243,6 +1095,10 @@ a {
 /* ---------------------------------------------------------------
    Notion panel content
 ----------------------------------------------------------------*/
+.panel--notion .panel__body {
+  min-height: 460px;
+}
+
 .notion-content {
   overflow-y: auto;
   font-size: 14px;
@@ -1280,7 +1136,7 @@ a {
   font-family: var(--font-mono);
   font-size: 12px;
   box-shadow:
-    inset 1px 1px 3px var(--shadow-dark);
+          inset 1px 1px 3px var(--shadow-dark-recessed);
 }
 
 blockquote.notion-block {
@@ -1311,14 +1167,24 @@ blockquote.notion-block {
   border-bottom: 1px solid var(--border);
 }
 
+.notion-task__title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .notion-task--done .notion-task__title {
   color: var(--text-muted);
   text-decoration: line-through;
 }
 
-.notion-task__title {
-  flex: 1;
-  font-size: 13px;
+.notion-task__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .notion-task__date {
@@ -1328,17 +1194,61 @@ blockquote.notion-block {
   white-space: nowrap;
 }
 
+/* Not done + past due: slight red tint. Side padding is offset by the
+   negative margin so the text stays aligned with the other rows. */
+.notion-task--overdue {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-radius: var(--radius-xs);
+  border-bottom-color: transparent;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-left: -10px;
+  margin-right: -10px;
+}
+
+.notion-task--overdue .notion-task__date {
+  color: var(--danger);
+}
+
+/* Collapsible "Done" section */
+.notion-done {
+  margin-top: 12px;
+}
+
+.notion-done > summary {
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.notion-done > summary:hover {
+  opacity: 1;
+}
+
+.notion-done[open] > summary {
+  margin-bottom: 6px;
+}
+
 .notion-tag {
   font-family: var(--font-mono);
   font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 3px 10px;
+  border-radius: 12px;
   background: var(--panel-raised);
   color: var(--text-muted);
   white-space: nowrap;
   box-shadow:
-    inset 2px 2px 4px var(--shadow-dark),
-    inset -1px -1px 3px var(--shadow-light);
+          inset 2px 2px 4px var(--shadow-dark-recessed),
+          inset -2px -2px 4px var(--shadow-light-recessed);
+}
+
+.notion-unsupported {
+  color: var(--danger);
+  font-size: 12px;
 }
 
 /* ---------------------------------------------------------------
@@ -1352,8 +1262,8 @@ blockquote.notion-block {
   border-radius: 12px;
   white-space: nowrap;
   box-shadow:
-    inset 2px 2px 4px var(--shadow-dark),
-    inset -1px -1px 3px var(--shadow-light);
+          inset 2px 2px 4px var(--shadow-dark-recessed),
+          inset -2px -2px 4px var(--shadow-light-recessed);
 }
 
 .notion-status--done {
@@ -1426,8 +1336,8 @@ blockquote.notion-block {
   flex-direction: column;
   overflow: hidden;
   box-shadow:
-    14px 14px 30px rgba(0, 0, 0, 0.25),
-    -6px -6px 18px var(--shadow-light);
+          14px 14px 30px rgba(0, 0, 0, 0.25),
+          -6px -6px 18px var(--shadow-light);
 }
 
 .preview-modal__header {
@@ -1479,4 +1389,151 @@ blockquote.notion-block {
   color: var(--text-muted);
   font-size: 13px;
   text-align: center;
+}
+
+/* ---------------------------------------------------------------
+   Mobile overrides — keep last so they beat the base rules above.
+----------------------------------------------------------------*/
+@media (max-width: 600px) {
+  /* 1. Reclaim horizontal screen space by shrinking outer padding */
+  .shell {
+    padding: 16px 16px 40px;
+  }
+
+  .shell__header {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .shell__nav {
+    order: 3;
+    width: 100%;
+  }
+
+  .shell__tab {
+    flex: 1;
+  }
+
+  .file-browser {
+    /* 2. Prevent the main grid from blowing out */
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  /* Folder tree as a horizontal scrollable tab list */
+  .folder-tree {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 4px;
+    padding-bottom: 12px;
+    gap: 12px;
+    scrollbar-width: none;
+  }
+
+  .folder-tree::-webkit-scrollbar {
+    display: none;
+  }
+
+  .folder-tree__row {
+    flex: 0 0 auto;
+    background: var(--bg);
+    padding-right: 8px;
+    box-shadow:
+            3px 3px 6px var(--shadow-dark),
+            -3px -3px 6px var(--shadow-light);
+  }
+
+  .folder-tree__row--active {
+    box-shadow:
+            inset 2px 2px 5px var(--shadow-dark-recessed),
+            inset -2px -2px 5px var(--shadow-light-recessed);
+  }
+
+  .folder-tree__row--active .folder-tree__actions {
+    visibility: visible;
+  }
+
+  /* Stack toolbar inputs cleanly */
+  .file-browser__toolbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .file-browser__toolbar select,
+  .file-browser__search {
+    width: 100%;
+  }
+
+  .file-browser__bulkbar {
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  /* Transform file rows into neumorphic cards */
+  .file-browser__row--head {
+    display: none;
+  }
+
+  .file-browser__row {
+    display: grid;
+    /* 3. The magic minmax(0, 1fr) fixes the grid overflow issue */
+    grid-template-columns: 24px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto auto;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 16px;
+    background: var(--bg);
+    border-bottom: none;
+    border-radius: var(--radius-sm);
+    margin-bottom: 16px;
+    box-shadow:
+            5px 5px 12px var(--shadow-dark),
+            -5px -5px 12px var(--shadow-light);
+  }
+
+  /* File Card Grid Placement */
+  .file-browser__row > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .file-browser__name {
+    grid-column: 2 / 4; /* Spans across the remaining width */
+    grid-row: 1;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-bottom: 4px;
+    min-width: 0; /* 4. Forces the ellipsis to trigger instead of breaking the grid */
+  }
+
+  .file-browser__size {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 12px;
+  }
+
+  .file-browser__date {
+    grid-column: 3;
+    grid-row: 2;
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .file-browser__move {
+    grid-column: 2;
+    grid-row: 3;
+    width: 100%; /* Allows the select box to fill the column safely */
+    max-width: 130px;
+    margin-top: 4px;
+  }
+
+  .file-browser__actions {
+    grid-column: 3;
+    grid-row: 3;
+    justify-content: flex-end;
+    margin-top: 4px;
+  }
 }
