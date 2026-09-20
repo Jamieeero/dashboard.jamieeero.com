@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 interface Entry {
   id: string
   name: string
-  expression: string
-  notes?: string
+  latex: string
+  notes?: string // plain text; wrap inline math in $...$
   onSheet: boolean
 }
 
@@ -14,9 +16,13 @@ interface Section {
   entries: Entry[]
 }
 
-const STORAGE_KEY = 'jamieeero-dashboard-physics1-crib'
+type Mode = 'view' | 'edit'
 
-// [name, expression, notes]. Use _x or _{sub} for subscripts.
+const STORAGE_KEY = 'jamieeero-dashboard-physics1-crib-v2'
+
+const t = String.raw
+
+// [name, latex, notes]
 type Seed = [string, string, string?]
 
 // Starter set for a typical first Physics 1 exam (vectors -> kinematics -> Newton's laws).
@@ -25,74 +31,81 @@ const SEED: { name: string; entries: Seed[] }[] = [
   {
     name: 'Constants & Units',
     entries: [
-      ['Gravity', 'g = 9.80 m/s²', 'use 9.8 or 10 per instructor'],
-      ['Conversions', '1 mi = 1609 m,  1 mi/h = 0.447 m/s,  1 m/s = 3.6 km/h'],
-      ['Trig identity', 'sin²θ + cos²θ = 1'],
+      ['Gravity', t`g = 9.80\ \text{m/s}^2`, 'use 9.8 or 10 per instructor'],
+      [
+        'Conversions',
+        t`1\ \text{mi} = 1609\ \text{m},\quad 1\ \text{mi/h} = 0.447\ \text{m/s},\quad 1\ \text{m/s} = 3.6\ \text{km/h}`,
+      ],
+      ['Trig identity', t`\sin^2\theta + \cos^2\theta = 1`],
     ],
   },
   {
     name: 'Vectors',
     entries: [
-      ['Components', 'A_x = A cos θ,  A_y = A sin θ', 'θ measured from +x axis'],
-      ['Magnitude', 'A = √(A_x² + A_y²)'],
-      ['Direction', 'θ = tan⁻¹(A_y / A_x)', 'check the quadrant'],
-      ['Vector sum', 'R_x = A_x + B_x,  R_y = A_y + B_y', 'add components, never magnitudes'],
+      ['Components', t`A_x = A\cos\theta,\quad A_y = A\sin\theta`, t`$\theta$ measured from $+x$ axis`],
+      ['Magnitude', t`A = \sqrt{A_x^2 + A_y^2}`],
+      ['Direction', t`\theta = \tan^{-1}\!\left(\frac{A_y}{A_x}\right)`, 'check the quadrant'],
+      ['Vector sum', t`R_x = A_x + B_x,\quad R_y = A_y + B_y`, 'add components, never magnitudes'],
     ],
   },
   {
     name: '1D Kinematics',
     entries: [
-      ['Average velocity', 'v_{avg} = Δx / Δt'],
-      ['Average acceleration', 'a_{avg} = Δv / Δt'],
-      ['Velocity', 'v = v₀ + at', 'constant a only'],
-      ['Position', 'x = x₀ + v₀t + ½at²', 'constant a only'],
-      ['No time', 'v² = v₀² + 2a(x − x₀)', 'constant a only'],
-      ['No acceleration', 'x − x₀ = ½(v₀ + v)t', 'constant a only'],
-      ['Free fall', 'a = −g = −9.8 m/s²', '+y up; same going up and down'],
-      ['Calculus form', 'v = dx/dt,  a = dv/dt,  Δx = ∫v dt', 'use when a varies'],
+      ['Average velocity', t`v_{\text{avg}} = \frac{\Delta x}{\Delta t}`],
+      ['Average acceleration', t`a_{\text{avg}} = \frac{\Delta v}{\Delta t}`],
+      ['Velocity', t`v = v_0 + at`, 'constant $a$ only'],
+      ['Position', t`x = x_0 + v_0 t + \tfrac{1}{2}at^2`, 'constant $a$ only'],
+      ['Without t', t`v^2 = v_0^2 + 2a(x - x_0)`, 'constant $a$ only'],
+      ['Without a', t`x - x_0 = \tfrac{1}{2}(v_0 + v)\,t`, 'constant $a$ only'],
+      ['Free fall', t`a = -g = -9.8\ \text{m/s}^2`, '+y up; same going up and down'],
+      ['Calculus form', t`v = \frac{dx}{dt},\quad a = \frac{dv}{dt},\quad \Delta x = \int v\,dt`, 'use when $a$ varies'],
     ],
   },
   {
     name: 'Projectiles & 2D',
     entries: [
-      ['Launch components', 'v₀_x = v₀ cos θ₀,  v₀_y = v₀ sin θ₀'],
-      ['Horizontal', 'x = x₀ + v₀_x t', 'a_x = 0, v_x constant'],
-      ['Vertical', 'y = y₀ + v₀_y t − ½gt²', 'a_y = −g'],
-      ['Vertical velocity', 'v_y = v₀_y − gt,  v_y² = v₀_y² − 2g(y − y₀)'],
-      ['Time of flight', 'T = 2v₀ sin θ₀ / g', 'lands at launch height'],
-      ['Max height', 'H = v₀² sin²θ₀ / 2g'],
-      ['Range', 'R = v₀² sin 2θ₀ / g', 'level ground; max at 45°'],
-      ['Relative velocity', 'v_{AC} = v_{AB} + v_{BC}', 'A rel. C = A rel. B + B rel. C'],
+      ['Launch components', t`v_{0x} = v_0\cos\theta_0,\quad v_{0y} = v_0\sin\theta_0`],
+      ['Horizontal', t`x = x_0 + v_{0x}t`, '$a_x = 0$, $v_x$ constant'],
+      ['Vertical', t`y = y_0 + v_{0y}t - \tfrac{1}{2}gt^2`, '$a_y = -g$'],
+      ['Vertical velocity', t`v_y = v_{0y} - gt,\quad v_y^2 = v_{0y}^2 - 2g(y - y_0)`],
+      ['Time of flight', t`T = \frac{2v_0\sin\theta_0}{g}`, 'lands at launch height'],
+      ['Max height', t`H = \frac{v_0^2\sin^2\theta_0}{2g}`],
+      ['Range', t`R = \frac{v_0^2\sin 2\theta_0}{g}`, t`level ground; max at $45^\circ$`],
+      ['Relative velocity', t`\vec v_{AC} = \vec v_{AB} + \vec v_{BC}`, 'A rel. C = A rel. B + B rel. C'],
     ],
   },
   {
     name: "Newton's Laws",
     entries: [
-      ['Second law', 'ΣF_x = ma_x,  ΣF_y = ma_y', 'draw a free-body diagram first'],
-      ['Equilibrium', 'ΣF = 0', 'a = 0: at rest or constant v'],
-      ['Weight', 'W = mg', 'always straight down'],
-      ['Third law', 'F_{AB} = −F_{BA}', 'equal and opposite, on different objects'],
-      ['Incline', 'along: mg sin θ,  ⊥: N = mg cos θ', 'θ = incline angle'],
-      ['Atwood machine', 'a = (m₂ − m₁)g / (m₁ + m₂),  T = 2m₁m₂g / (m₁ + m₂)', 'ideal pulley, m₂ > m₁'],
-      ['Apparent weight', 'N = m(g + a)', 'a positive upward (elevator)'],
+      ['Second law', t`\sum F_x = ma_x,\quad \sum F_y = ma_y`, 'draw a free-body diagram first'],
+      ['Equilibrium', t`\sum \vec F = 0`, '$a = 0$: at rest or constant $v$'],
+      ['Weight', t`W = mg`, 'always straight down'],
+      ['Third law', t`\vec F_{AB} = -\vec F_{BA}`, 'equal and opposite, on different objects'],
+      ['Incline', t`F_\parallel = mg\sin\theta,\quad N = mg\cos\theta`, t`$\theta$ = incline angle`],
+      [
+        'Atwood machine',
+        t`a = \frac{(m_2 - m_1)g}{m_1 + m_2},\quad T = \frac{2m_1 m_2 g}{m_1 + m_2}`,
+        'ideal pulley, $m_2 > m_1$',
+      ],
+      ['Apparent weight', t`N = m(g + a)`, '$a$ positive upward (elevator)'],
     ],
   },
   {
     name: 'Friction',
     entries: [
-      ['Static', 'f_s ≤ μ_s N', 'max just before slipping: f_s = μ_s N'],
-      ['Kinetic', 'f_k = μ_k N', 'opposes motion; usually μ_k < μ_s'],
-      ['Slipping on incline', 'tan θ = μ_s', 'angle where block just starts to slide'],
-      ['Sliding down incline', 'a = g(sin θ − μ_k cos θ)'],
+      ['Static', t`f_s \le \mu_s N`, t`max just before slipping: $f_s = \mu_s N$`],
+      ['Kinetic', t`f_k = \mu_k N`, t`opposes motion; usually $\mu_k < \mu_s$`],
+      ['Slipping on incline', t`\tan\theta = \mu_s`, 'angle where block just starts to slide'],
+      ['Sliding down incline', t`a = g(\sin\theta - \mu_k\cos\theta)`],
     ],
   },
   {
     name: 'Circular Motion',
     entries: [
-      ['Centripetal accel.', 'a_c = v² / r = ω²r', 'points toward the center'],
-      ['Net radial force', 'ΣF_r = mv² / r', 'not a new force; the net inward force'],
-      ['Speed & period', 'v = 2πr / T = ωr,  ω = 2π / T'],
-      ['Banked curve', 'tan θ = v² / rg', 'frictionless'],
+      ['Centripetal accel.', t`a_c = \frac{v^2}{r} = \omega^2 r`, 'points toward the center'],
+      ['Net radial force', t`\sum F_r = \frac{mv^2}{r}`, 'not a new force; the net inward force'],
+      ['Speed & period', t`v = \frac{2\pi r}{T} = \omega r,\quad \omega = \frac{2\pi}{T}`],
+      ['Banked curve', t`\tan\theta = \frac{v^2}{rg}`, 'frictionless'],
     ],
   },
 ]
@@ -101,10 +114,10 @@ function buildSeed(): Section[] {
   return SEED.map((s) => ({
     id: crypto.randomUUID(),
     name: s.name,
-    entries: s.entries.map(([name, expression, notes]) => ({
+    entries: s.entries.map(([name, latex, notes]) => ({
       id: crypto.randomUUID(),
       name,
-      expression,
+      latex,
       notes,
       onSheet: true,
     })),
@@ -120,29 +133,29 @@ function loadSections(): Section[] {
   }
 }
 
-// Renders _x / _{avg} as subscripts.
-function Expr({ text }: { text: string }) {
-  const parts = text.split(/(_\{[^}]+\}|_[A-Za-z0-9])/g)
+function Tex({ src }: { src: string }) {
+  const html = useMemo(
+    () => katex.renderToString(src, { throwOnError: false, strict: 'ignore' }),
+    [src]
+  )
+  return <span dangerouslySetInnerHTML={{ __html: html }} />
+}
+
+// Plain text with inline $...$ math.
+function Rich({ text }: { text: string }) {
   return (
     <>
-      {parts.map((p, i) =>
-        p.startsWith('_') ? <sub key={i}>{p.replace(/[_{}]/g, '')}</sub> : p
-      )}
+      {text.split(/\$([^$]+)\$/g).map((part, i) => (i % 2 ? <Tex key={i} src={part} /> : part))}
     </>
   )
 }
 
 export default function Physics1CribSheet() {
   const [sections, setSections] = useState<Section[]>(() => loadSections())
-  const [mode, setMode] = useState<'edit' | 'preview'>('edit')
+  const [mode, setMode] = useState<Mode>('view')
   const [fontPt, setFontPt] = useState(8)
   const [cols, setCols] = useState(3)
-  const [addingSection, setAddingSection] = useState(false)
-  const [sectionName, setSectionName] = useState('')
-  const [addingTo, setAddingTo] = useState<string | null>(null)
-  const [name, setName] = useState('')
-  const [expression, setExpression] = useState('')
-  const [notes, setNotes] = useState('')
+  const [focusId, setFocusId] = useState<string | null>(null)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sections))
@@ -151,15 +164,19 @@ export default function Physics1CribSheet() {
   const total = sections.reduce((n, s) => n + s.entries.length, 0)
   const onSheet = sections.reduce((n, s) => n + s.entries.filter((e) => e.onSheet).length, 0)
 
-  function addSection(e: React.FormEvent) {
-    e.preventDefault()
-    if (!sectionName.trim()) return
-    setSections((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), name: sectionName.trim(), entries: [] },
-    ])
-    setSectionName('')
-    setAddingSection(false)
+  function changeMode(m: Mode) {
+    setFocusId(null)
+    setMode(m)
+  }
+
+  function addSection() {
+    const id = crypto.randomUUID()
+    setFocusId(id)
+    setSections((prev) => [...prev, { id, name: '', entries: [] }])
+  }
+
+  function renameSection(id: string, name: string) {
+    setSections((prev) => prev.map((s) => (s.id === id ? { ...s, name } : s)))
   }
 
   function removeSection(s: Section) {
@@ -167,27 +184,18 @@ export default function Physics1CribSheet() {
     setSections((prev) => prev.filter((x) => x.id !== s.id))
   }
 
-  function addEntry(e: React.FormEvent, sectionId: string) {
-    e.preventDefault()
-    if (!name.trim() || !expression.trim()) return
-    const entry: Entry = {
-      id: crypto.randomUUID(),
-      name: name.trim(),
-      expression: expression.trim(),
-      notes: notes.trim() || undefined,
-      onSheet: true,
-    }
-    setSections((prev) =>
-      prev.map((s) => (s.id === sectionId ? { ...s, entries: [...s.entries, entry] } : s))
-    )
-    setName('')
-    setExpression('')
-    setNotes('')
-    setAddingTo(null)
-  }
-
   function updateEntries(sectionId: string, fn: (entries: Entry[]) => Entry[]) {
     setSections((prev) => prev.map((s) => (s.id === sectionId ? { ...s, entries: fn(s.entries) } : s)))
+  }
+
+  function addEntry(sectionId: string) {
+    const id = crypto.randomUUID()
+    setFocusId(id)
+    updateEntries(sectionId, (es) => [...es, { id, name: '', latex: '', onSheet: true }])
+  }
+
+  function patchEntry(sectionId: string, entryId: string, patch: Partial<Entry>) {
+    updateEntries(sectionId, (es) => es.map((e) => (e.id === entryId ? { ...e, ...patch } : e)))
   }
 
   return (
@@ -195,15 +203,7 @@ export default function Physics1CribSheet() {
       <header className="panel__header">
         <h2>Physics 1 · Exam 1 crib sheet</h2>
         <div className="panel__header-actions cribsheet__controls">
-          <span className="cribsheet__count">{onSheet} / {total} on sheet</span>
-          {mode === 'edit' ? (
-            <>
-              <button className="fullscreen-btn" onClick={() => setAddingSection((v) => !v)}>
-                {addingSection ? '×' : '+ Section'}
-              </button>
-              <button className="fullscreen-btn" onClick={() => setMode('preview')}>Preview</button>
-            </>
-          ) : (
+          {mode === 'view' ? (
             <>
               <label className="cribsheet__ctl">
                 font
@@ -216,134 +216,148 @@ export default function Physics1CribSheet() {
                 {cols}
               </label>
               <button className="fullscreen-btn" onClick={() => window.print()}>Print</button>
-              <button className="fullscreen-btn" onClick={() => setMode('edit')}>Edit</button>
             </>
+          ) : (
+            <button className="fullscreen-btn" onClick={addSection}>+ Section</button>
           )}
+          <span className="cribsheet__count">{onSheet} / {total} on sheet</span>
+          <div className="shell__nav cribsheet__mode" role="tablist" aria-label="Crib sheet mode">
+            {(['view', 'edit'] as const).map((m) => (
+              <button
+                key={m}
+                role="tab"
+                aria-selected={mode === m}
+                className={`shell__tab${mode === m ? ' shell__tab--active' : ''}`}
+                onClick={() => changeMode(m)}
+              >
+                {m === 'view' ? 'View' : 'Edit'}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
       <div className="panel__body panel__body--padded formulas__body">
-        {mode === 'edit' && addingSection && (
-          <form className="quicklinks__form" onSubmit={addSection}>
-            <input
-              type="text"
-              placeholder="Section name (e.g. Work & Energy)"
-              value={sectionName}
-              onChange={(e) => setSectionName(e.target.value)}
-              autoFocus
-            />
-            <button type="submit" className="quicklinks__add-submit">Add</button>
-          </form>
-        )}
-
-        {mode === 'edit' ? (
-          <div className="cribsheet__sections">
-            {sections.map((s) => (
-              <div key={s.id} className="cribsheet__section">
-                <div className="formulas__detail-header">
-                  <h3>{s.name}</h3>
-                  <div className="cribsheet__section-actions">
-                    <button
-                      className="fullscreen-btn"
-                      onClick={() => setAddingTo(addingTo === s.id ? null : s.id)}
-                      aria-label={addingTo === s.id ? 'Cancel' : `Add formula to ${s.name}`}
-                      title={addingTo === s.id ? 'Cancel' : 'Add formula'}
-                    >
-                      {addingTo === s.id ? '×' : '+'}
-                    </button>
-                    <button
-                      className="quicklinks__remove"
-                      onClick={() => removeSection(s)}
-                      aria-label={`Remove ${s.name}`}
-                      title="Remove section"
-                    >
-                      ×
-                    </button>
-                  </div>
-                </div>
-
-                {addingTo === s.id && (
-                  <form className="formulas__form" onSubmit={(e) => addEntry(e, s.id)}>
-                    <input
-                      type="text"
-                      placeholder="Name (e.g. Work-energy theorem)"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      autoFocus
-                    />
-                    <input
-                      type="text"
-                      placeholder="Expression (subscripts: _x or _{avg})"
-                      value={expression}
-                      onChange={(e) => setExpression(e.target.value)}
-                      className="formulas__form-expression"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Notes / conditions (optional)"
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                    />
-                    <button type="submit" className="quicklinks__add-submit">Add</button>
-                  </form>
-                )}
-
-                <div className="formulas__list">
-                  {s.entries.map((f) => (
-                    <div
-                      key={f.id}
-                      className={`formulas__item cribsheet__item${f.onSheet ? '' : ' cribsheet__item--off'}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={f.onSheet}
-                        onChange={() =>
-                          updateEntries(s.id, (es) => es.map((x) => (x.id === f.id ? { ...x, onSheet: !x.onSheet } : x)))
-                        }
-                        aria-label={`Include ${f.name} on sheet`}
-                        title="Include on sheet"
-                      />
-                      <div className="formulas__item-main">
-                        <span className="formulas__item-name">{f.name}</span>
-                        <code className="formulas__item-expression"><Expr text={f.expression} /></code>
-                        {f.notes && <span className="formulas__item-notes"><Expr text={f.notes} /></span>}
+        {mode === 'view' ? (
+          onSheet === 0 ? (
+            <p className="notion-empty">Nothing on the sheet yet. Switch to Edit to add formulas.</p>
+          ) : (
+            <div className="cribsheet__page" style={{ fontSize: `${fontPt}pt`, columnCount: cols }}>
+              {sections.map((s) => {
+                const rows = s.entries.filter((e) => e.onSheet && e.latex.trim())
+                if (!rows.length) return null
+                return (
+                  <div key={s.id} className="cribsheet__sec">
+                    <h4>{s.name || 'Untitled'}</h4>
+                    {rows.map((e) => (
+                      <div key={e.id} className="cribsheet__row">
+                        {e.name && <span className="cribsheet__row-name">{e.name}: </span>}
+                        <Tex src={e.latex} />
+                        {e.notes && (
+                          <span className="cribsheet__row-note"> (<Rich text={e.notes} />)</span>
+                        )}
                       </div>
+                    ))}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        ) : (
+          <>
+            <p className="cribsheet__hint">
+              Formulas are LaTeX (KaTeX). Notes are plain text; put inline math between $…$. Untick a formula to keep it off the sheet.
+            </p>
+            <div className="cribsheet__sections">
+              {sections.map((s) => (
+                <div key={s.id} className="cribsheet__section">
+                  <div className="formulas__detail-header">
+                    <input
+                      type="text"
+                      className="cribsheet__field cribsheet__field--title"
+                      placeholder="Section name"
+                      value={s.name}
+                      onChange={(e) => renameSection(s.id, e.target.value)}
+                      autoFocus={s.id === focusId}
+                      aria-label="Section name"
+                    />
+                    <div className="cribsheet__section-actions">
+                      <button
+                        className="fullscreen-btn"
+                        onClick={() => addEntry(s.id)}
+                        aria-label={`Add formula to ${s.name || 'section'}`}
+                        title="Add formula"
+                      >
+                        +
+                      </button>
                       <button
                         className="quicklinks__remove"
-                        onClick={() => updateEntries(s.id, (es) => es.filter((x) => x.id !== f.id))}
-                        aria-label={`Remove ${f.name}`}
-                        title="Remove"
+                        onClick={() => removeSection(s)}
+                        aria-label={`Remove ${s.name || 'section'}`}
+                        title="Remove section"
                       >
                         ×
                       </button>
                     </div>
-                  ))}
-                  {s.entries.length === 0 && addingTo !== s.id && (
-                    <p className="notion-empty">No formulas in this section yet.</p>
-                  )}
+                  </div>
+
+                  <div className="formulas__list">
+                    {s.entries.map((f) => (
+                      <div
+                        key={f.id}
+                        className={`formulas__item cribsheet__item${f.onSheet ? '' : ' cribsheet__item--off'}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={f.onSheet}
+                          onChange={() => patchEntry(s.id, f.id, { onSheet: !f.onSheet })}
+                          aria-label={`Include ${f.name || 'formula'} on sheet`}
+                          title="Include on sheet"
+                        />
+                        <div className="formulas__item-main">
+                          <input
+                            type="text"
+                            className="cribsheet__field cribsheet__field--name"
+                            placeholder="Name"
+                            value={f.name}
+                            onChange={(e) => patchEntry(s.id, f.id, { name: e.target.value })}
+                            autoFocus={f.id === focusId}
+                          />
+                          <input
+                            type="text"
+                            className="cribsheet__field cribsheet__field--tex"
+                            placeholder="LaTeX, e.g. x = x_0 + v_0 t + \tfrac{1}{2}at^2"
+                            value={f.latex}
+                            onChange={(e) => patchEntry(s.id, f.id, { latex: e.target.value })}
+                            spellCheck={false}
+                          />
+                          <div className="cribsheet__preview"><Tex src={f.latex} /></div>
+                          <input
+                            type="text"
+                            className="cribsheet__field"
+                            placeholder="Notes (optional)"
+                            value={f.notes ?? ''}
+                            onChange={(e) => patchEntry(s.id, f.id, { notes: e.target.value || undefined })}
+                          />
+                        </div>
+                        <button
+                          className="quicklinks__remove"
+                          onClick={() => updateEntries(s.id, (es) => es.filter((x) => x.id !== f.id))}
+                          aria-label={`Remove ${f.name || 'formula'}`}
+                          title="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    {s.entries.length === 0 && (
+                      <p className="notion-empty">No formulas in this section yet.</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="cribsheet__page" style={{ fontSize: `${fontPt}pt`, columnCount: cols }}>
-            {sections.map((s) => {
-              const rows = s.entries.filter((e) => e.onSheet)
-              if (!rows.length) return null
-              return (
-                <div key={s.id} className="cribsheet__sec">
-                  <h4>{s.name}</h4>
-                  {rows.map((e) => (
-                    <div key={e.id} className="cribsheet__row">
-                      <span className="cribsheet__row-name">{e.name}:</span>{' '}
-                      <code><Expr text={e.expression} /></code>
-                      {e.notes && <span className="cribsheet__row-note"> (<Expr text={e.notes} />)</span>}
-                    </div>
-                  ))}
-                </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </section>

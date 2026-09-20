@@ -1573,6 +1573,59 @@ blockquote.notion-block {
   color: var(--text-muted);
 }
 
+.cribsheet__mode .shell__tab {
+  padding: 5px 12px;
+  font-size: 12px;
+}
+
+.cribsheet__hint {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cribsheet__field {
+  width: 100%;
+  min-width: 0;
+  background: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 8px 10px;
+  font-size: 13px;
+  box-shadow:
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed);
+  outline: none;
+}
+.cribsheet__field:focus {
+  box-shadow:
+          inset 3px 3px 6px var(--shadow-dark-recessed),
+          inset -3px -3px 6px var(--shadow-light-recessed),
+          0 0 0 3px rgba(122, 106, 83, 0.3);
+}
+.cribsheet__field--title {
+  margin-right: 10px;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+}
+.cribsheet__field--name {
+  font-weight: 600;
+}
+.cribsheet__field--tex {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent-2-deep);
+}
+
+.cribsheet__preview {
+  min-height: 2.2em;
+  padding: 2px 4px;
+  overflow-x: auto;
+  color: var(--text);
+}
+
 .cribsheet__ctl {
   display: flex;
   align-items: center;
@@ -1600,12 +1653,13 @@ blockquote.notion-block {
 }
 
 .cribsheet__item {
-  align-items: center;
+  align-items: flex-start;
 }
 .cribsheet__item input[type='checkbox'] {
   flex-shrink: 0;
   width: 16px;
   height: 16px;
+  margin-top: 9px;
   accent-color: var(--accent-2);
   cursor: pointer;
 }
@@ -1645,8 +1699,8 @@ blockquote.notion-block {
 .cribsheet__row-name {
   font-weight: 600;
 }
-.cribsheet__row code {
-  font-family: var(--font-mono);
+.cribsheet__page .katex {
+  font-size: 1.05em;
 }
 .cribsheet__row-note {
   color: #444;
