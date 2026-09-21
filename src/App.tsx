@@ -1,3 +1,5 @@
+// App.tsx
+
 import { useEffect, useState } from 'react'
 import CalendarPanel from './components/CalendarPanel'
 import DesmosPanel from './components/DesmosPanel'
@@ -7,9 +9,10 @@ import QuickLinksPanel from './components/QuickLinksPanel'
 import FormulasPanel from './components/FormulasPanel'
 import EmailPanel from './components/EmailPanel'
 import Physics1CribSheet from './components/Physics1CribSheet'
+import RoboticsCribSheet from './components/RoboticsCribSheet'
 
 type Tab = 'dashboard' | 'formulas' | 'email'
-type FormulasView = 'general' | 'physics1'
+type FormulasView = 'general' | 'physics1' | 'robotics'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -70,7 +73,7 @@ export default function App() {
       {tab === 'formulas' && (
         <>
           <nav className="shell__nav shell__subnav" role="tablist" aria-label="Formula sets">
-            {(['general', 'physics1'] as const).map((v) => (
+            {(['general', 'physics1', 'robotics'] as const).map((v) => (
               <button
                 key={v}
                 role="tab"
@@ -78,12 +81,18 @@ export default function App() {
                 className={`shell__tab${formulasView === v ? ' shell__tab--active' : ''}`}
                 onClick={() => setFormulasView(v)}
               >
-                {v === 'general' ? 'General' : 'Physics 1'}
+                {v === 'general' ? 'General' : v === 'physics1' ? 'Physics 1' : 'Robotics'}
               </button>
             ))}
           </nav>
           <main className="grid grid--single">
-            {formulasView === 'general' ? <FormulasPanel /> : <Physics1CribSheet />}
+            {formulasView === 'general' ? (
+              <FormulasPanel />
+            ) : formulasView === 'physics1' ? (
+              <Physics1CribSheet />
+            ) : (
+              <RoboticsCribSheet />
+            )}
           </main>
         </>
       )}
