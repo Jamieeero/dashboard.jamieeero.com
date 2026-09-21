@@ -37,6 +37,11 @@ const SEED: { name: string; entries: Seed[] }[] = [
         t`1\ \text{mi} = 1609\ \text{m},\quad 1\ \text{mi/h} = 0.447\ \text{m/s},\quad 1\ \text{m/s} = 3.6\ \text{km/h}`,
       ],
       ['Trig identity', t`\sin^2\theta + \cos^2\theta = 1`],
+      ['SI prefixes', t`\text{n}=10^{-9},\ \mu=10^{-6},\ \text{m}=10^{-3},\ \text{c}=10^{-2},\ \text{k}=10^{3},\ \text{M}=10^{6},\ \text{G}=10^{9}`],
+      ['Length / time', t`1\ \text{in} = 2.54\ \text{cm},\quad 1\ \text{ft} = 0.3048\ \text{m},\quad 1\ \text{h} = 3600\ \text{s},\quad 1\ \text{rev} = 2\pi\ \text{rad}`],
+      ['Squared / cubed units', t`1\ \text{cm}^2 = 10^{-4}\ \text{m}^2,\quad 1\ \text{cm}^3 = 10^{-6}\ \text{m}^3`, 'square/cube the prefix too'],
+      ['Dimensions', t`[v]=\tfrac{L}{T},\ [a]=\tfrac{L}{T^2},\ [F]=\tfrac{ML}{T^2},\ [E]=\tfrac{ML^2}{T^2}`, 'use to check any formula'],
+      ['Sig figs', t`\times\div:\ \text{fewest sig figs};\quad +-:\ \text{fewest decimal places}`, 'round only at the end'],
     ],
   },
   {
@@ -97,6 +102,19 @@ const SEED: { name: string; entries: Seed[] }[] = [
       ['Kinetic', t`f_k = \mu_k N`, t`opposes motion; usually $\mu_k < \mu_s$`],
       ['Slipping on incline', t`\tan\theta = \mu_s`, 'angle where block just starts to slide'],
       ['Sliding down incline', t`a = g(\sin\theta - \mu_k\cos\theta)`],
+
+    ],
+  },
+  {
+    name: 'Complex Systems',
+    entries: [
+      ['Approach', t`\text{FBD per object, own axes}\ \to\ \text{same } |a| \text{ for taut rope}\ \to\ \text{solve}`, 'ideal rope/pulley: same $T$'],
+      ['Whole system', t`a = \frac{F_{\text{ext,net}}}{\sum m}`, 'internal forces (T, contact) cancel'],
+      ['Push two blocks', t`F_{12} = \frac{m_2}{m_1+m_2}F`, 'contact force on $m_2$, frictionless'],
+      ['Table + hanging', t`a = \frac{m_2 g - \mu_k m_1 g}{m_1+m_2}`, '$\mu_k = 0$ if frictionless'],
+      ['Incline + hanging', t`a = \frac{m_2 g - m_1 g(\sin\theta + \mu_k\cos\theta)}{m_1+m_2}`, '$m_1$ moving up incline'],
+      ['Stacked blocks', t`f_s \le \mu_s N,\quad a_{\max} = \mu_s g`, 'friction accelerates the top block'],
+      ['Pulley constraint', t`\text{string length fixed} \Rightarrow \sum \Delta(\text{segments}) = 0`, 'movable pulley: $a_1 = 2a_2$'],
     ],
   },
   {
@@ -106,6 +124,23 @@ const SEED: { name: string; entries: Seed[] }[] = [
       ['Net radial force', t`\sum F_r = \frac{mv^2}{r}`, 'not a new force; the net inward force'],
       ['Speed & period', t`v = \frac{2\pi r}{T} = \omega r,\quad \omega = \frac{2\pi}{T}`],
       ['Banked curve', t`\tan\theta = \frac{v^2}{rg}`, 'frictionless'],
+    ],
+  },
+  {
+    name: 'Work & Kinetic Energy',
+    entries: [
+      ['Work (constant F)', t`W = \vec F\cdot\vec d = Fd\cos\phi`, '$\phi$ = angle between $F$ and $d$; sign matters'],
+      ['Work (variable F)', t`W = \int_{x_i}^{x_f} F(x)\,dx`, 'area under $F$–$x$ graph'],
+      ['Kinetic energy', t`K = \tfrac12 mv^2`],
+      ['Work–energy theorem', t`W_{\text{net}} = \Delta K = \tfrac12 mv_f^2 - \tfrac12 mv_i^2`, 'use when $t$ not asked or $F$ varies'],
+      ['Gravity', t`W_g = -mg(y_f - y_i)`, 'positive going down'],
+      ['Spring', t`W_s = \tfrac12 kx_i^2 - \tfrac12 kx_f^2`],
+      ['Friction', t`W_f = -f_k d`],
+      ['Zero work', t`N \perp d,\quad F_c \perp v \Rightarrow W = 0`, 'normal force, centripetal force'],
+      ['Power', t`P_{\text{avg}} = \frac{W}{\Delta t},\quad P = \vec F\cdot\vec v`, '1 W = 1 J/s; 1 hp = 746 W'],
+      ['Units', t`1\ \text{J} = 1\ \text{N·m} = 1\ \text{kg·m}^2/\text{s}^2`],
+      ['Frictionless drop', t`v = \sqrt{2gh}`, 'from rest, height $h$'],
+      ['Setup cues', t`\text{starts/ends at rest} \Rightarrow K = 0`, '"stops" $\to K_f = 0$; "released" $\to K_i = 0$'],
     ],
   },
 ]
