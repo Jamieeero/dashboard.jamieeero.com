@@ -18,7 +18,7 @@ interface Section {
 
 type Mode = 'view' | 'edit'
 
-const STORAGE_KEY = 'jamieeero-dashboard-physics1-crib-v2'
+const STORAGE_KEY = 'jamieeero-dashboard-physics1-crib-v3'
 
 const t = String.raw
 
