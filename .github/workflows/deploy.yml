@@ -36,6 +36,15 @@ jobs:
           secrets: |
             NOTION_TOKEN
             CALENDAR_ICS_URLS
+            GOOGLE_CLIENT_ID
+            GOOGLE_CLIENT_SECRET
+            MS_CLIENT_ID
+            MS_CLIENT_SECRET
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          CALENDAR_ICS_URLS: ${{ secrets.CALENDAR_ICS_URLS}}
+          CALENDAR_ICS_URLS: ${{ secrets.CALENDAR_ICS_URLS }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+
