@@ -109,9 +109,16 @@ export async function handleOAuthCallback(
   const url = new URL(request.url)
   const code = url.searchParams.get('code')
   const stateRaw = url.searchParams.get('state')
-  const errParam = url.searchParams.get('error')
 
-  if (errParam) return Response.redirect(`${origin}/?tab=email&emailError=${encodeURIComponent(errParam)}`, 302)
+  // Capture both the generic error and the detailed description
+  const errParam = url.searchParams.get('error')
+  const errDesc = url.searchParams.get('error_description')
+
+  if (errParam) {
+    const fullError = errDesc ? `${errParam}: ${errDesc}` : errParam
+    return Response.redirect(`${origin}/?tab=email&emailError=${encodeURIComponent(fullError)}`, 302)
+  }
+
   if (!code) return new Response('Missing code', { status: 400 })
 
   let label = provider === 'google' ? 'Gmail' : 'Outlook'

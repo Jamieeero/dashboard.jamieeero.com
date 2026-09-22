@@ -219,7 +219,7 @@ a {
 
 .stats-bar__item {
   flex: 1;
-  min-width: 80px;
+  min-width: 120px;
   background: var(--panel);
   border-radius: var(--radius-md);
   padding: 14px 18px;
@@ -259,7 +259,7 @@ a {
 
   .stats-bar {
     flex-direction: column;
-    flex: 0 0 160px;
+    flex: 0 0 128px;
     gap: 12px;
     position: sticky;
     top: 24px;
