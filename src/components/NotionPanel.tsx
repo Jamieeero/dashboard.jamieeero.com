@@ -113,7 +113,7 @@ function formatRelativeDate(dateString: string): string {
   return target.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function isOverdue(row: NotionRow): boolean {
+export function isOverdue(row: NotionRow): boolean {
   if (row.status === 'Done' || !row.date) return false
   const target = new Date(row.date + (row.date.length === 10 ? 'T00:00:00' : ''))
   const today = new Date()

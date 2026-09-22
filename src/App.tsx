@@ -8,6 +8,7 @@ import FileBrowser from './components/FileBrowser/FileBrowser'
 import QuickLinksPanel from './components/QuickLinksPanel'
 import FormulasPanel from './components/FormulasPanel'
 import EmailPanel from './components/EmailPanel'
+import StatsBar from './components/StatsBar'
 import Physics1CribSheet from './components/Physics1CribSheet'
 import RoboticsCribSheet from './components/RoboticsCribSheet'
 
@@ -22,7 +23,11 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function App() {
   const [now, setNow] = useState(new Date())
-  const [tab, setTab] = useState<Tab>('dashboard')
+  // The email OAuth callback redirects back here with ?tab=email so the
+  // user lands where they were, instead of back on the dashboard tab.
+  const [tab, setTab] = useState<Tab>(() =>
+    new URLSearchParams(window.location.search).get('tab') === 'email' ? 'email' : 'dashboard'
+  )
   const [formulasView, setFormulasView] = useState<FormulasView>('general')
 
   useEffect(() => {
@@ -61,13 +66,16 @@ export default function App() {
       </header>
 
       {tab === 'dashboard' && (
-        <main className="grid">
-          <CalendarPanel />
-          <QuickLinksPanel />
-          <NotionPanel />
-          <DesmosPanel />
-          <FileBrowser />
-        </main>
+        <div className="dashboard-layout">
+          <StatsBar />
+          <main className="grid">
+            <CalendarPanel />
+            <QuickLinksPanel />
+            <NotionPanel />
+            <DesmosPanel />
+            <FileBrowser />
+          </main>
+        </div>
       )}
 
       {tab === 'formulas' && (
