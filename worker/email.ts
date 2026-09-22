@@ -93,7 +93,7 @@ export function startOAuth(provider: Provider, label: string, origin: string, en
     scope: 'offline_access openid email https://graph.microsoft.com/Mail.Read',
     state,
   })
-  return Response.redirect(`https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?${params}`, 302)
+  return Response.redirect(`https://login.microsoftonline.com/common/oauth2/v2.0/authorize?${params}`, 302)
 }
 
 // ---------------------------------------------------------------
@@ -179,7 +179,7 @@ async function exchangeGoogleCode(code: string, origin: string, env: EmailEnv): 
 }
 
 async function exchangeMicrosoftCode(code: string, origin: string, env: EmailEnv): Promise<TokenResponse> {
-  const res = await fetch('https://login.microsoftonline.com/consumers/oauth2/v2.0/token', {
+  const res = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -223,7 +223,7 @@ async function ensureFreshToken(account: AccountRow, env: EmailEnv): Promise<str
   const tokenUrl =
     account.provider === 'google'
       ? 'https://oauth2.googleapis.com/token'
-      : 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token'
+      : 'https://login.microsoftonline.com/common/oauth2/v2.0/token'
 
   const body =
     account.provider === 'google'

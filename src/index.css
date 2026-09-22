@@ -259,7 +259,7 @@ a {
 
   .stats-bar {
     flex-direction: column;
-    flex: 0 0 128px;
+    flex: 0 0 100px;
     gap: 12px;
     position: sticky;
     top: 24px;
