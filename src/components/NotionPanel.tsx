@@ -123,16 +123,7 @@ export function isOverdue(row: NotionRow): boolean {
 }
 
 function sortRows(rows: NotionRow[]): NotionRow[] {
-  const statusPriority: Record<StatusType, number> = {
-    'In-Progress': 1,
-    'Not Started': 2,
-    'Done': 3,
-  }
-
   return [...rows].sort((a, b) => {
-    if (statusPriority[a.status] !== statusPriority[b.status]) {
-      return statusPriority[a.status] - statusPriority[b.status]
-    }
     if (a.date && b.date) return a.date.localeCompare(b.date)
     if (a.date !== b.date) return a.date ? -1 : 1
     return a.title.localeCompare(b.title)

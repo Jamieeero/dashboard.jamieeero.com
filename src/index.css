@@ -96,9 +96,9 @@ a {
    Shell
 ----------------------------------------------------------------*/
 .shell {
-  max-width: 1400px;
+  max-width: none;
   margin: 0 auto;
-  padding: 40px 32px 64px;
+  padding: 40px 20px 64px;
 }
 
 .shell__header {
@@ -259,7 +259,7 @@ a {
 
   .stats-bar {
     flex-direction: column;
-    flex: 0 0 100px;
+    flex: 0 0 110px;
     gap: 12px;
     position: sticky;
     top: 24px;
@@ -1555,14 +1555,13 @@ blockquote.notion-block {
 
 .notion-task {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   padding: 8px 0;
   border-bottom: 1px solid var(--border);
 }
 
 .notion-task__title {
-  flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
   font-size: 13px;
@@ -1578,7 +1577,6 @@ blockquote.notion-block {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-shrink: 0;
 }
 
 .notion-task__date {
