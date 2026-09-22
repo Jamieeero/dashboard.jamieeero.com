@@ -279,29 +279,28 @@ async function fetchGmailMessages(account: AccountRow, accessToken: string, sinc
 
   const list = await listRes.json<{ messages?: { id: string }[] }>()
   if (!list.messages?.length) return []
-  const messages = await Promise.all(
-    list.messages.map(async (m) => {
-      const res = await fetch(
-        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      )
-      if (!res.ok) return null
-      const msg = await res.json<{
-        id: string
-        snippet?: string
-        internalDate?: string
-        payload?: { headers?: { name: string; value: string }[] }
-      }>()
+
+  // Gmail's list endpoint only returns ids, so the headers/snippet for each
+  // message still need a separate call — but they're bundled into ONE HTTP
+  // request via Gmail's batch endpoint instead of one fetch() per message.
+  // Cloudflare counts each fetch() as a subrequest (D1 queries count too),
+  // capped at 50/invocation on the Free plan, so 40 messages used to mean
+  // 41 subrequests for this account alone. Batching brings that down to 2.
+  const metas = await fetchGmailMetadataBatch(
+    list.messages.map((m) => m.id),
+    accessToken
+  )
+
+  return metas
+    .filter((msg): msg is NonNullable<typeof msg> => msg !== null)
+    .map((msg) => {
       const headers = msg.payload?.headers ?? []
       const from = headers.find((h) => h.name === 'From')?.value ?? 'Unknown sender'
       const subject = headers.find((h) => h.name === 'Subject')?.value ?? '(no subject)'
       const receivedMs = msg.internalDate ? Number(msg.internalDate) : Date.now()
       return { msg, from, subject, receivedMs }
     })
-  )
-
-  return messages
-    .filter((m): m is NonNullable<typeof m> => m !== null && m.receivedMs >= sinceMs)
+    .filter((m) => m.receivedMs >= sinceMs)
     .map((m) => ({
       id: `${account.id}:${m.msg.id}`,
       accountId: account.id,
@@ -312,6 +311,75 @@ async function fetchGmailMessages(account: AccountRow, accessToken: string, sinc
       receivedAt: new Date(m.receivedMs).toISOString(),
       viewed: false,
     }))
+}
+
+interface GmailMetadata {
+  id: string
+  snippet?: string
+  internalDate?: string
+  payload?: { headers?: { name: string; value: string }[] }
+}
+
+// Fetches metadata (From/Subject headers + snippet) for a list of Gmail
+// message ids using ONE multipart batch request per 50 ids, instead of one
+// fetch() per message. See https://developers.google.com/workspace/gmail/api/guides/batch
+async function fetchGmailMetadataBatch(ids: string[], accessToken: string): Promise<(GmailMetadata | null)[]> {
+  const results: (GmailMetadata | null)[] = new Array(ids.length).fill(null)
+  const CHUNK_SIZE = 50 // Google recommends batches of 50 or fewer
+
+  for (let start = 0; start < ids.length; start += CHUNK_SIZE) {
+    const chunk = ids.slice(start, start + CHUNK_SIZE)
+    const boundary = `batch_${crypto.randomUUID()}`
+
+    const body =
+      chunk
+        .map((id, i) => {
+          const path = `/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject`
+          return `--${boundary}\r\nContent-Type: application/http\r\nContent-ID: <item${i}>\r\n\r\nGET ${path}\r\n\r\n`
+        })
+        .join('') + `--${boundary}--`
+
+    const res = await fetch('https://gmail.googleapis.com/batch/gmail/v1', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': `multipart/mixed; boundary=${boundary}`,
+      },
+      body,
+    })
+
+    // If a chunk's batch call fails outright, leave those messages out of
+    // the inbox rather than failing the whole account.
+    if (!res.ok) continue
+
+    const contentType = res.headers.get('content-type') ?? ''
+    const boundaryMatch = contentType.match(/boundary=(?:"([^"]+)"|([^;]+))/)
+    const responseBoundary = boundaryMatch?.[1] ?? boundaryMatch?.[2]
+    if (!responseBoundary) continue
+
+    const text = await res.text()
+    // First split element is the preamble before the first boundary, last
+    // is the trailing "--" close marker — drop both.
+    const parts = text.split(`--${responseBoundary}`).slice(1, -1)
+
+    for (const part of parts) {
+      const idMatch = part.match(/Content-ID:\s*<response-item(\d+)/i)
+      const statusMatch = part.match(/HTTP\/1\.\d (\d{3})/)
+      if (!idMatch || !statusMatch || statusMatch[1][0] !== '2') continue
+
+      const jsonStart = part.indexOf('{')
+      const jsonEnd = part.lastIndexOf('}')
+      if (jsonStart === -1 || jsonEnd === -1) continue
+
+      try {
+        results[start + Number(idMatch[1])] = JSON.parse(part.slice(jsonStart, jsonEnd + 1)) as GmailMetadata
+      } catch {
+        // skip unparseable part
+      }
+    }
+  }
+
+  return results
 }
 
 async function fetchGraphMessages(account: AccountRow, accessToken: string, sinceMs: number): Promise<EmailMessage[]> {
