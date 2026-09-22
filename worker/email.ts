@@ -56,7 +56,7 @@ function openUrlFor(provider: Provider, emailAddress: string): string {
   }
   // Personal (outlook.com/hotmail/live) accounts live on outlook.live.com.
   // A work/school (Microsoft 365) account would need outlook.office.com instead.
-  return 'https://outlook.live.com/mail/0/inbox'
+  return 'https://outlook.office.com/mail/0/inbox'
 }
 
 function redirectUri(origin: string, provider: Provider): string {
