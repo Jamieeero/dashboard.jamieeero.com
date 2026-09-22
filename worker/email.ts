@@ -261,10 +261,17 @@ async function fetchGmailMessages(account: AccountRow, accessToken: string, sinc
       new URLSearchParams({ q: 'newer_than:7d', maxResults: '40' }),
     { headers: { Authorization: `Bearer ${accessToken}` } }
   )
-  if (!listRes.ok) throw new Error(`${account.label}: ${await listRes.text()}`)
+
+  if (!listRes.ok) {
+    const errorText = await listRes.text()
+    if (listRes.status === 403 && errorText.includes('SCOPE_INSUFFICIENT')) {
+      throw new Error('Permission denied. Please disconnect and reconnect this account, ensuring you check the box for email access.')
+    }
+    throw new Error(`${account.label} API error: ${listRes.status}`)
+  }
+
   const list = await listRes.json<{ messages?: { id: string }[] }>()
   if (!list.messages?.length) return []
-
   const messages = await Promise.all(
     list.messages.map(async (m) => {
       const res = await fetch(
